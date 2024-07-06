@@ -32,13 +32,13 @@ public class FileUtils
 
     public static string GetFreeSpace()
     {
-        var availableSpace = Kernel._fileTheSail._vfs.GetAvailableFreeSpace(CurrentPathManager.CurrentDirectory);
+        var availableSpace = Kernel.CurrentFileTheSail._vfs.GetAvailableFreeSpace(CurrentPathManager.CurrentDirectory);
         return ConvertSize(availableSpace);
     }
 
     public static string GetCapacity()
     {
-        var totalSize = Kernel._fileTheSail._vfs.GetTotalSize(CurrentPathManager.CurrentDirectory);
+        var totalSize = Kernel.CurrentFileTheSail._vfs.GetTotalSize(CurrentPathManager.CurrentDirectory);
         return ConvertSize(totalSize);
     }
 

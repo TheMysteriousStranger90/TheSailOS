@@ -12,7 +12,7 @@ public static class CurrentPathManager
         {
             case "..":
                 var parentDir = System.IO.Path.GetDirectoryName(Kernel.CurrentDirectory.TrimEnd('\\'));
-                if (!string.IsNullOrEmpty(parentDir) && Kernel._fileTheSail._vfs.GetDirectory(parentDir) != null)
+                if (!string.IsNullOrEmpty(parentDir) && Kernel.CurrentFileTheSail._vfs.GetDirectory(parentDir) != null)
                 {
                     Kernel.SetCurrentDirectory(parentDir);
                 }
@@ -23,7 +23,7 @@ public static class CurrentPathManager
                 }
                 break;
             case "~":
-                if (Kernel._fileTheSail._vfs.GetDirectory(UserDirectory) != null)
+                if (Kernel.CurrentFileTheSail._vfs.GetDirectory(UserDirectory) != null)
                 {
                     Kernel.SetCurrentDirectory(UserDirectory);
                 }
@@ -35,7 +35,7 @@ public static class CurrentPathManager
                 break;
             default:
                 var newPath = System.IO.Path.Combine(Kernel.CurrentDirectory, dir);
-                if (Kernel._fileTheSail._vfs.GetDirectory(newPath) != null)
+                if (Kernel.CurrentFileTheSail._vfs.GetDirectory(newPath) != null)
                 {
                     Kernel.SetCurrentDirectory(newPath);
                 }
