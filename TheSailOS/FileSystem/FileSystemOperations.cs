@@ -20,8 +20,16 @@ public class FileSystemOperations
             Console.WriteLine($"Invalid path components: Kernel.CurrentDirectory={Kernel.CurrentDirectory}, path={path}");
             return;
         }
-        path = Path.Combine(Kernel.CurrentDirectory, path);
-        _fileTheSail._vfs.CreateDirectory(path);
+        
+        var fullPath = Path.Combine(Kernel.CurrentDirectory, path);
+        if (_fileTheSail._vfs == null)
+        {
+            Console.WriteLine("Error: _vfs is null. CosmosVFS instance is not initialized.");
+            return;
+        }
+        
+        Console.WriteLine($"Full path for directory creation: {fullPath}");
+        _fileTheSail._vfs.CreateDirectory(fullPath);
     }
 
     public void DeleteDirectory(string path, bool recursive = false)

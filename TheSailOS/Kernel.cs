@@ -11,10 +11,9 @@ namespace TheSailOS
 {
     public class Kernel : Sys.Kernel
     {
-        public static string CurrentDirectory { get; private set; } = @"L:\";
-        public FileTheSail _fileTheSail;
+        public static string CurrentDirectory { get; private set; } = @"0:\";
         public static FileTheSail CurrentFileTheSail;
-        
+
         private CommandProcessor _commandProcessor;
 
         public static void SetCurrentDirectory(string path)
@@ -24,14 +23,13 @@ namespace TheSailOS
 
         protected override void BeforeRun()
         {
-            _fileTheSail = new FileTheSail();
-            VFSManager.RegisterVFS(_fileTheSail._vfs);
-            CurrentFileTheSail = _fileTheSail;
+            CurrentFileTheSail = new FileTheSail();
+            VFSManager.RegisterVFS(CurrentFileTheSail._vfs);
             
-            var fileReader = new FileReader(_fileTheSail);
-            var fileWriter = new FileWriter(_fileTheSail);
-            var fileMover = new FileMover(_fileTheSail, fileReader, fileWriter);
-            var fileSystemOperations = new FileSystemOperations(_fileTheSail);
+            var fileReader = new FileReader(CurrentFileTheSail);
+            var fileWriter = new FileWriter(CurrentFileTheSail);
+            var fileMover = new FileMover(CurrentFileTheSail, fileReader, fileWriter);
+            var fileSystemOperations = new FileSystemOperations(CurrentFileTheSail);
 
             _commandProcessor = new CommandProcessor(fileReader, fileWriter, fileMover, fileSystemOperations);
 
@@ -43,7 +41,7 @@ namespace TheSailOS
         {
             Console.Write($"{CurrentDirectory}> ");
             var input = Console.ReadLine();
-            
+
             _commandProcessor.ProcessCommand(input);
         }
     }
