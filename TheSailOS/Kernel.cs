@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Cosmos.System.FileSystem.VFS;
+using TheSailOS.Commands;
 using TheSailOS.FileSystem;
 using Sys = Cosmos.System;
 
@@ -11,7 +12,10 @@ namespace TheSailOS
     public class Kernel : Sys.Kernel
     {
         public static string CurrentDirectory { get; private set; } = @"L:\";
-        public static FileTheSail _fileTheSail;
+        public FileTheSail _fileTheSail;
+        public static FileTheSail CurrentFileTheSail;
+        
+        private CommandProcessor _commandProcessor;
 
         public static void SetCurrentDirectory(string path)
         {
@@ -22,76 +26,25 @@ namespace TheSailOS
         {
             _fileTheSail = new FileTheSail();
             VFSManager.RegisterVFS(_fileTheSail._vfs);
+            CurrentFileTheSail = _fileTheSail;
+            
+            var fileReader = new FileReader(_fileTheSail);
+            var fileWriter = new FileWriter(_fileTheSail);
+            var fileMover = new FileMover(_fileTheSail, fileReader, fileWriter);
+            var fileSystemOperations = new FileSystemOperations(_fileTheSail);
+
+            _commandProcessor = new CommandProcessor(fileReader, fileWriter, fileMover, fileSystemOperations);
 
             Console.WriteLine("Cosmos booted successfully. Type a line of text to get it echoed back.");
+            Console.WriteLine("Type a command to execute.");
         }
 
         protected override void Run()
         {
-            //Now only for testing purposes
-            Console.Write("Input: ");
+            Console.Write($"{CurrentDirectory}> ");
             var input = Console.ReadLine();
-            var parts = input.Split(' ');
-            if (parts.Length == 0) return;
-
-            switch (parts[0].ToLower())
-            {
-                case "read":
-                    if (parts.Length > 1)
-                    {
-                        FileReader fileReader = new FileReader(_fileTheSail);
-                        try
-                        {
-                            string content = fileReader.ReadFile(parts[1]);
-                            Console.WriteLine($"Content of {parts[1]}: {content}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error reading file: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Usage: read <filename>");
-                    }
-
-                    break;
-                case "write":
-                    if (parts.Length > 2)
-                    {
-                        FileWriter fileWriter = new FileWriter(_fileTheSail);
-                        try
-                        {
-                            fileWriter.WriteFile(parts[1], string.Join(" ", parts.Skip(2)));
-                            Console.WriteLine($"Written to {parts[1]}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error writing file: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Usage: write <filename> <content>");
-                    }
-
-                    break;
-                case "cd":
-                    if (parts.Length > 1)
-                    {
-                        SetCurrentDirectory(parts[1]);
-                        Console.WriteLine($"Current directory set to {CurrentDirectory}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Usage: cd <path>");
-                    }
-
-                    break;
-                default:
-                    Console.WriteLine("Unknown command. Available commands: read, write, move, cd");
-                    break;
-            }
+            
+            _commandProcessor.ProcessCommand(input);
         }
     }
 }

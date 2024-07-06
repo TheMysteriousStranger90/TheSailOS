@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Cosmos.System.FileSystem.Listing;
 
 namespace TheSailOS.FileSystem;
@@ -14,6 +15,11 @@ public class FileSystemOperations
 
     public void CreateDirectory(string path)
     {
+        if (string.IsNullOrEmpty(Kernel.CurrentDirectory) || string.IsNullOrEmpty(path))
+        {
+            Console.WriteLine($"Invalid path components: Kernel.CurrentDirectory={Kernel.CurrentDirectory}, path={path}");
+            return;
+        }
         path = Path.Combine(Kernel.CurrentDirectory, path);
         _fileTheSail._vfs.CreateDirectory(path);
     }
