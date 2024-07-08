@@ -4,6 +4,7 @@ using System.Linq;
 using System.CommandLine;
 using System.Text;
 using TheSailOS.FileSystem;
+using TheSailOS.PowerSystem;
 
 namespace TheSailOS.Commands;
 
@@ -13,13 +14,16 @@ public class CommandProcessor
     private readonly FileWriter _fileWriter;
     private readonly FileMover _fileMover;
     private readonly FileSystemOperations _fileSystemOperations;
+    
+    private readonly RebootCommand _rebootCommand;
+    private readonly ShutdownCommand _shutdownCommand;
 
     private List<string> _commandHistory = new List<string>();
 
     private List<string> _availableCommands = new List<string>
     {
         "create", "read", "write", "delete", "move", "mkdir", "rmdir", "ls", "mvdir", "help", "history", "alias",
-        "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace"
+        "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace", "shutdown", "reboot"
     };
 
     private Dictionary<string, string> _commandAliases = new Dictionary<string, string>();
@@ -31,6 +35,8 @@ public class CommandProcessor
         this._fileWriter = fileWriter;
         this._fileMover = fileMover;
         this._fileSystemOperations = fileSystemOperations;
+        this._rebootCommand = new RebootCommand();
+        this._shutdownCommand = new ShutdownCommand();
     }
 
 
@@ -197,6 +203,12 @@ public class CommandProcessor
                         ProcessCommand(cmd);
                     }
 
+                    break;
+                case "shutdown":
+                    _shutdownCommand.Shutdown();
+                    break;
+                case "reboot":
+                    _rebootCommand.Reboot();
                     break;
                 default:
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;

@@ -10,7 +10,7 @@ public class TheSailOSCfg
     private static string _path = @"0:\thesail.cfg";
     private static string NameOs { get; set; } = "TheSailOS";
     private static DateTime InstallDate { get; set; } = DateTime.Now;
-    private static bool BootLock { get; set; } = true;
+    public static bool BootLock { get; set; } = false;
     private static string InstallVer { get; set; } = Kernel.VersionOs;
 
     internal static void Load()
