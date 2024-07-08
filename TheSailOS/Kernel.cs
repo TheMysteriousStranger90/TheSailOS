@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Cosmos.System.FileSystem.VFS;
 using TheSailOS.Commands;
+using TheSailOS.Configuration;
 using TheSailOS.FileSystem;
 using Sys = Cosmos.System;
 
@@ -12,6 +13,8 @@ namespace TheSailOS
     public class Kernel : Sys.Kernel
     {
         public static string CurrentDirectory { get; private set; } = @"0:\";
+        public static string VersionOs = "0.0.1";
+
         public static FileTheSail CurrentFileTheSail;
 
         private CommandProcessor _commandProcessor;
@@ -23,6 +26,8 @@ namespace TheSailOS
 
         protected override void BeforeRun()
         {
+            TheSailOSCfg.Load();
+            
             CurrentFileTheSail = new FileTheSail();
             VFSManager.RegisterVFS(CurrentFileTheSail._vfs);
             
