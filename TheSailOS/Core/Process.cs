@@ -14,6 +14,10 @@ public abstract class Process
     public bool Critical { get; protected set; } = false;
     public Process Parent { get; protected internal set; }
     public List<string> Args { get; protected set; } = new List<string>();
+    
+    public ProcessPriority Priority { get; protected set; } = ProcessPriority.Normal;
+    public int ResourceLimit { get; protected set; } = 100;
+    public int CurrentResourceUsage { get; protected set; } = 0;
 
     protected Process(string name, ProcessType type, Process parent = null)
     {
@@ -85,6 +89,11 @@ public abstract class Process
             IsRunning = false;
             HandleException(e, "stopping");
         }
+    }
+    
+    public void UpdateResourceUsage(int usage)
+    {
+        CurrentResourceUsage = Math.Clamp(usage, 0, ResourceLimit);
     }
 
     private void HandleException(Exception e, string action)

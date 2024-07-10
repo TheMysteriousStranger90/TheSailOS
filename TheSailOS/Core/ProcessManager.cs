@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TheSailOS.Core;
@@ -53,12 +54,21 @@ public class ProcessManager
 
     public void Yield()
     {
-        foreach (var process in Processes)
+        var prioritizedProcesses = Processes
+            .Where(p => p.IsRunning)
+            .OrderByDescending(p => p.Priority)
+            .ThenBy(p => p.CurrentResourceUsage);
+
+        foreach (var process in prioritizedProcesses)
         {
-            if (process.IsRunning)
+            if (process.CurrentResourceUsage >= process.ResourceLimit)
             {
-                process.TryRun();
+                Console.WriteLine($"Process {process.Name} is exceeding its resource limit and will be paused.");
+                process.TryStop();
+                continue;
             }
+
+            process.TryRun();
         }
     }
 
