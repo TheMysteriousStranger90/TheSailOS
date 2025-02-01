@@ -31,24 +31,28 @@ namespace TheSailOS
 
         protected override void BeforeRun()
         {
-            TheSailOSCfg.Load();
+            Console.WriteLine("Initializing TheSail OS...");
+            InitializeFileSystem();
+            InitializeMemoryManagement();
+            InitializeProcessManagement();
+            InitializeSystemProcesses();
             
+            Console.WriteLine($"TheSail OS {VersionOs} booted successfully.");
+            Console.WriteLine("Type 'help' for available commands.");
+        }
+        
+        private void InitializeFileSystem()
+        {
+            TheSailOSCfg.Load();
             CurrentFileTheSail = new FileTheSail();
             VFSManager.RegisterVFS(CurrentFileTheSail._vfs);
-            
+
             var fileReader = new FileReader(CurrentFileTheSail);
             var fileWriter = new FileWriter(CurrentFileTheSail);
             var fileMover = new FileMover(CurrentFileTheSail, fileReader, fileWriter);
             var fileSystemOperations = new FileSystemOperations(CurrentFileTheSail);
 
             _commandProcessor = new CommandProcessor(fileReader, fileWriter, fileMover, fileSystemOperations);
-            InitializeMemoryManagement();
-            InitializeProcessManagement();
-            InitializeSystemProcesses();
-            
-
-            Console.WriteLine("Cosmos booted successfully. Type a line of text to get it echoed back.");
-            Console.WriteLine("Type a command to execute.");
         }
         
         private void InitializeProcessManagement()
