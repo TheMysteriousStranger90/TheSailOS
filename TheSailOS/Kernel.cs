@@ -6,6 +6,7 @@ using Cosmos.System.FileSystem.VFS;
 using TheSailOS.Commands;
 using TheSailOS.Configuration;
 using TheSailOS.FileSystem;
+using TheSailOS.MemoryTheSail;
 using TheSailOS.ProcessTheSail;
 using Sys = Cosmos.System;
 
@@ -14,9 +15,11 @@ namespace TheSailOS
     public class Kernel : Sys.Kernel
     {
         private ProcessManager _processManager;
+        private EnhancedMemoryManager _memoryManager;
+        private VirtualMemoryManager _virtualMemoryManager;
         public static string CurrentDirectory { get; private set; } = @"0:\";
         public static string VersionOs = "0.0.1";
-
+        private bool _isRunning;
         public static FileTheSail CurrentFileTheSail;
 
         private CommandProcessor _commandProcessor;
@@ -39,9 +42,10 @@ namespace TheSailOS
             var fileSystemOperations = new FileSystemOperations(CurrentFileTheSail);
 
             _commandProcessor = new CommandProcessor(fileReader, fileWriter, fileMover, fileSystemOperations);
-            
+            InitializeMemoryManagement();
             InitializeProcessManagement();
             InitializeSystemProcesses();
+            
 
             Console.WriteLine("Cosmos booted successfully. Type a line of text to get it echoed back.");
             Console.WriteLine("Type a command to execute.");
@@ -57,14 +61,52 @@ namespace TheSailOS
             // System Monitor Process
             _processManager.CreateProcess("SystemMonitor", () =>
             {
-
+                if (_isRunning)
+                {
+                    MonitorSystemResources();
+                }
             }, 10);
 
             // Memory Manager Process
             _processManager.CreateProcess("MemoryManager", () =>
             {
-
+                if (_isRunning)
+                {
+                    ManageSystemMemory();
+                }
             }, 8);
+        }
+        
+        private void ManageSystemMemory()
+        {
+            try
+            {
+                // Custom memory cleanup instead of GC.Collect()
+                _memoryManager.CleanupUnusedMemory();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Memory management error: {ex.Message}");
+            }
+        }
+        
+        private void InitializeMemoryManagement()
+        {
+            _memoryManager = new EnhancedMemoryManager();
+            // Remove VirtualMemoryManager for now
+            _memoryManager.AllocateMemory(1024 * 1024, MemoryPermissions.Read | MemoryPermissions.Write);
+        }
+        
+        private void MonitorSystemResources()
+        {
+            try
+            {
+                _processManager.UpdateProcessState();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Monitor error: {ex.Message}");
+            }
         }
 
         protected override void Run()
