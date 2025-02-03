@@ -104,14 +104,18 @@ public class CommandProcessor
                         if (args.Length < 1)
                             throw new ArgumentException("Missing argument for 'create'. Usage: create <filename>");
 
-                        _fileWriter.WriteFile(args[0], "");
-                        Console.WriteLine($"Created file {args[0]}");
+                        string filename = args[0].Trim();
+                        if (string.IsNullOrEmpty(filename))
+                            throw new ArgumentException("Filename cannot be empty");
+
+                        _fileWriter.WriteFile(filename, "");
+                        Thread.Sleep(100); // Wait for filesystem to update
+                        Console.WriteLine($"Created file: {filename}");
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error creating file: {ex.Message}");
                     }
-
                     break;
                 case "read":
                     try

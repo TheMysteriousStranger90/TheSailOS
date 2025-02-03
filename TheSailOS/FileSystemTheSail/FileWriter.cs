@@ -22,38 +22,36 @@ public class FileWriter
         try
         {
             path = Path.Combine(Kernel.CurrentDirectory, path);
+            Console.WriteLine($"Full path: {path}");
 
-            // Check if file exists and get correct file type
             var file = _fileTheSail._vfs.GetFile(path);
-            if (file != null)
-            {
-                Console.WriteLine($"File {path} already exists, updating content...");
-                UpdateFileContent(file, content);
-                return;
-            }
-
-            // Create new file
-            Console.WriteLine($"Creating new file: {path}");
-            file = _fileTheSail._vfs.CreateFile(path);
-            
-            Thread.Sleep(100); // Wait for filesystem
-
             if (file == null)
             {
-                throw new IOException($"Failed to create file: {path}");
+                file = _fileTheSail._vfs.CreateFile(path);
+                Thread.Sleep(50);
             }
 
-            // Write initial content
-            if (!string.IsNullOrEmpty(content))
+            using (var stream = file.GetFileStream())
             {
-                UpdateFileContent(file, content);
+                if (!stream.CanWrite)
+                    throw new IOException($"Cannot write to {path}");
+
+                stream.Position = 0;
+                stream.SetLength(0);
+            
+                if (!string.IsNullOrEmpty(content))
+                {
+                    var bytes = Encoding.ASCII.GetBytes(content);
+                    stream.Write(bytes, 0, bytes.Length);
+                    stream.Flush();
+                }
             }
 
-            Console.WriteLine($"File created successfully: {path}");
+            Thread.Sleep(50);
         }
         catch (Exception ex)
         {
-            throw new IOException($"Error in WriteFile: {ex.Message}");
+            throw new IOException($"Write error: {ex.Message}", ex);
         }
     }
 
