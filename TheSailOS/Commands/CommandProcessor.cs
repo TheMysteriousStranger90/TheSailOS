@@ -25,7 +25,7 @@ public class CommandProcessor
     private List<string> _availableCommands = new List<string>
     {
         "create", "read", "write", "delete", "move", "mkdir", "rmdir", "ls", "mvdir", "help", "history", "alias",
-        "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace", "shutdown", "reboot"
+        "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace", "shutdown", "reboot", "pwd"
     };
 
     private Dictionary<string, string> _commandAliases = new Dictionary<string, string>();
@@ -272,6 +272,9 @@ public class CommandProcessor
                 case "reboot":
                     _rebootCommand.Reboot();
                     break;
+                case "pwd":
+                    Console.WriteLine(CurrentPathManager.CurrentDirectory);
+                    break;
                 default:
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
                     Console.WriteLine("Unknown command. Type 'help' to see available commands.");
@@ -299,6 +302,7 @@ public class CommandProcessor
         Console.WriteLine("  list [path] - Lists files in directory");
 
         Console.WriteLine("\nDirectory Operations:");
+        Console.WriteLine("  pwd - Print working directory");
         Console.WriteLine("  mkdir <dirname> - Creates new directory");
         Console.WriteLine("  rmdir <dirname> - Removes directory");
         Console.WriteLine("  cd <path> - Changes current directory");
@@ -333,6 +337,7 @@ public class CommandProcessor
             "mkdir" => "Usage: mkdir <directory> - Creates new directory",
             "rmdir" => "Usage: rmdir <directory> - Removes directory",
             "ls" => "Usage: ls [path] - Lists contents of directory",
+            "pwd" => "Usage: pwd - Prints current working directory",
             "mvdir" => "Usage: mvdir <source> <destination> - Moves directory to new location",
             "rename" => "Usage: rename <path> <newname> - Renames file or directory",
             "forceremove" => "Usage: forceremove <path> - Forces removal of file or directory",
