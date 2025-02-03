@@ -38,7 +38,7 @@ public class FileWriter
 
                 stream.Position = 0;
                 stream.SetLength(0);
-            
+
                 if (!string.IsNullOrEmpty(content))
                 {
                     var bytes = Encoding.ASCII.GetBytes(content);
@@ -112,7 +112,7 @@ public class FileWriter
             throw new FileNotFoundException($"File {path} not found");
         }
     }
-    
+
     public List<string> GetFileListing(string path)
     {
         path = Path.Combine(Kernel.CurrentDirectory, path);

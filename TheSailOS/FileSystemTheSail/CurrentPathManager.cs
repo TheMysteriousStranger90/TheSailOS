@@ -1,4 +1,6 @@
-﻿namespace TheSailOS.FileSystemTheSail;
+﻿using System.IO;
+
+namespace TheSailOS.FileSystemTheSail;
 
 public static class CurrentPathManager
 {
@@ -10,42 +12,43 @@ public static class CurrentPathManager
         error = "none";
         switch (dir)
         {
-            case "..":
-                var parentDir = System.IO.Path.GetDirectoryName(Kernel.CurrentDirectory.TrimEnd('\\'));
+            case ".." or "back":
+                if (Kernel.CurrentDirectory.TrimEnd('\\') == "0:")
+                {
+                    error = "Already at root directory";
+                    return false;
+                }
+
+                var parentDir = Path.GetDirectoryName(Kernel.CurrentDirectory.TrimEnd('\\'));
                 if (!string.IsNullOrEmpty(parentDir) && Kernel.CurrentFileTheSail._vfs.GetDirectory(parentDir) != null)
                 {
                     Kernel.SetCurrentDirectory(parentDir);
+                    return true;
                 }
-                else
-                {
-                    error = "Cannot move further up the directory tree.";
-                    return false;
-                }
-                break;
+
+                error = "Cannot move further up the directory tree.";
+                return false;
+
             case "~":
                 if (Kernel.CurrentFileTheSail._vfs.GetDirectory(UserDirectory) != null)
                 {
                     Kernel.SetCurrentDirectory(UserDirectory);
+                    return true;
                 }
-                else
-                {
-                    error = "User directory does not exist!";
-                    return false;
-                }
-                break;
+
+                error = "User directory does not exist!";
+                return false;
+
             default:
-                var newPath = System.IO.Path.Combine(Kernel.CurrentDirectory, dir);
+                var newPath = Path.Combine(Kernel.CurrentDirectory, dir);
                 if (Kernel.CurrentFileTheSail._vfs.GetDirectory(newPath) != null)
                 {
                     Kernel.SetCurrentDirectory(newPath);
+                    return true;
                 }
-                else
-                {
-                    error = "This directory doesn't exist!";
-                    return false;
-                }
-                break;
+
+                error = "This directory doesn't exist!";
+                return false;
         }
-        return true;
     }
 }

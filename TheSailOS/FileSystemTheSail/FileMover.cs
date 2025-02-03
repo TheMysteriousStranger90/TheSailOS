@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Text;
+using System.Threading;
 
 namespace TheSailOS.FileSystemTheSail;
 
@@ -15,7 +17,7 @@ public class FileMover
         this._fileReader = fileReader;
         this._fileWriter = fileWriter;
     }
-
+/*
     public void MoveFile(string sourcePath, string destinationPath)
     {
         try
@@ -24,31 +26,74 @@ public class FileMover
             destinationPath = Path.Combine(Kernel.CurrentDirectory, destinationPath);
 
             var sourceFile = _fileTheSail._vfs.GetFile(sourcePath);
-            var destinationFile = _fileTheSail._vfs.GetFile(destinationPath);
-
             if (sourceFile == null)
             {
                 throw new FileNotFoundException($"Source file {sourcePath} not found");
             }
 
-            if (destinationFile != null)
+            string destDir = Path.GetDirectoryName(destinationPath);
+            if (!string.IsNullOrEmpty(destDir) && _fileTheSail._vfs.GetDirectory(destDir) == null)
             {
-                throw new Exception($"Destination file {destinationPath} already exists");
+                throw new DirectoryNotFoundException($"Destination directory {destDir} not found");
             }
 
-            var content = _fileReader.ReadFile(sourcePath);
+            if (_fileTheSail._vfs.GetFile(destinationPath) != null)
+            {
+                throw new IOException($"Destination file {destinationPath} already exists");
+            }
+
+            string content = _fileReader.ReadFile(sourcePath);
 
             _fileWriter.WriteFile(destinationPath, content);
 
-            _fileTheSail._vfs.DeleteFile(sourceFile);
-        }
-        catch (FileNotFoundException ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
+            _fileWriter.DeleteFile(sourcePath);
+
+            Thread.Sleep(100);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            throw new IOException($"Failed to move file: {ex.Message}", ex);
+        }
+    }
+*/
+
+    public void MoveFile(string sourcePath, string destinationPath)
+    {
+        try
+        {
+            sourcePath = Path.Combine(Kernel.CurrentDirectory, sourcePath);
+            destinationPath = Path.Combine(Kernel.CurrentDirectory, destinationPath);
+
+            Console.WriteLine($"Moving from: {sourcePath}");
+            Console.WriteLine($"Moving to: {destinationPath}");
+
+            var sourceFile = _fileTheSail._vfs.GetFile(sourcePath);
+            if (sourceFile == null)
+            {
+                throw new FileNotFoundException($"Source file not found: {sourcePath}");
+            }
+            
+            string destDir = Path.GetDirectoryName(destinationPath);
+            if (!string.IsNullOrEmpty(destDir))
+            {
+                var dir = _fileTheSail._vfs.GetDirectory(destDir);
+                if (dir == null)
+                {
+                    _fileTheSail._vfs.CreateDirectory(destDir);
+                    Thread.Sleep(50);
+                }
+            }
+            
+            string content = _fileReader.ReadFile(sourcePath);
+            _fileWriter.WriteFile(destinationPath, content);
+            _fileWriter.DeleteFile(sourcePath);
+
+            Console.WriteLine("File moved successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Move failed: {ex.Message}");
+            throw;
         }
     }
 

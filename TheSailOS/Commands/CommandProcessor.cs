@@ -25,7 +25,8 @@ public class CommandProcessor
     private List<string> _availableCommands = new List<string>
     {
         "create", "read", "write", "delete", "move", "mkdir", "rmdir", "ls", "mvdir", "help", "history", "alias",
-        "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace", "shutdown", "reboot", "pwd"
+        "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace", "shutdown", "reboot", "pwd",
+        "back"
     };
 
     private Dictionary<string, string> _commandAliases = new Dictionary<string, string>();
@@ -116,6 +117,7 @@ public class CommandProcessor
                     {
                         Console.WriteLine($"Error creating file: {ex.Message}");
                     }
+
                     break;
                 case "read":
                     try
@@ -138,19 +140,18 @@ public class CommandProcessor
                         Console.WriteLine("Usage: write <filename> <content>");
                         break;
                     }
-    
-                    try 
+
+                    try
                     {
                         string filename = args[0];
                         string content = string.Join(" ", args.Skip(1));
-        
+
                         Console.WriteLine($"Writing to file: {filename}");
                         Console.WriteLine($"Content: {content}");
-        
+
                         _fileWriter.WriteFile(filename, content);
-                        Thread.Sleep(100); // Wait for filesystem
-        
-                        // Verify write
+                        Thread.Sleep(100);
+
                         var verification = _fileReader.ReadFile(filename);
                         if (verification == content)
                         {
@@ -165,6 +166,7 @@ public class CommandProcessor
                     {
                         Console.WriteLine($"Error writing file: {ex.Message}");
                     }
+
                     break;
                 case "delete":
                     if (args.Length < 1)
@@ -173,11 +175,23 @@ public class CommandProcessor
                     Console.WriteLine($"Deleted file {args[0]}");
                     break;
                 case "move":
-                    if (args.Length < 2)
-                        throw new ArgumentException(
-                            "Missing argument for 'move'. Usage: move <source> <destination>");
-                    _fileMover.MoveFile(args[0], args[1]);
-                    Console.WriteLine($"Moved file from {args[0]} to {args[1]}");
+                    try
+                    {
+                        if (args.Length < 2)
+                            throw new ArgumentException("Missing arguments. Usage: move <source> <destination>");
+
+                        _fileMover.MoveFile(args[0], args[1]);
+                        Console.WriteLine($"File moved successfully from {args[0]} to {args[1]}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error during move operation: {ex.Message}");
+                        if (ex.InnerException != null)
+                        {
+                            Console.WriteLine($"Details: {ex.InnerException.Message}");
+                        }
+                    }
+
                     break;
                 case "rename":
                     if (args.Length < 2)
@@ -226,9 +240,9 @@ public class CommandProcessor
                 case "cd":
                     if (args.Length < 1)
                         throw new ArgumentException("Missing argument for 'cd'. Usage: cd <directory>");
-                    if (!CurrentPathManager.Set(args[0], out string error))
+                    if (!CurrentPathManager.Set(args[0], out string errorMessage))
                     {
-                        Console.WriteLine($"Error: {error}");
+                        Console.WriteLine($"Error: {errorMessage}");
                     }
                     else
                     {
@@ -275,6 +289,17 @@ public class CommandProcessor
                 case "pwd":
                     Console.WriteLine(CurrentPathManager.CurrentDirectory);
                     break;
+                case "back":
+                    if (!CurrentPathManager.Set("..", out string error))
+                    {
+                        Console.WriteLine($"Error: {error}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Current directory changed to {CurrentPathManager.CurrentDirectory}");
+                    }
+
+                    break;
                 default:
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
                     Console.WriteLine("Unknown command. Type 'help' to see available commands.");
@@ -308,6 +333,7 @@ public class CommandProcessor
         Console.WriteLine("  cd <path> - Changes current directory");
         Console.WriteLine("  ls [path] - Lists directory contents");
         Console.WriteLine("  mvdir <source> <dest> - Moves directory");
+        Console.WriteLine("  back - Go to parent directory");
 
         Console.WriteLine("\nFile/Directory Management:");
         Console.WriteLine("  move <source> <dest> - Moves file");
@@ -336,6 +362,7 @@ public class CommandProcessor
             "move" => "Usage: move <source> <destination> - Moves file to new location",
             "mkdir" => "Usage: mkdir <directory> - Creates new directory",
             "rmdir" => "Usage: rmdir <directory> - Removes directory",
+            "back" => "Usage: back - Returns to parent directory",
             "ls" => "Usage: ls [path] - Lists contents of directory",
             "pwd" => "Usage: pwd - Prints current working directory",
             "mvdir" => "Usage: mvdir <source> <destination> - Moves directory to new location",
