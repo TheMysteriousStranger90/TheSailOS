@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.CommandLine;
 using System.Text;
-using TheSailOS.FileSystem;
+using TheSailOS.FileSystemTheSail;
 using TheSailOS.PowerSystem;
 
 namespace TheSailOS.Commands;
@@ -14,7 +14,8 @@ public class CommandProcessor
     private readonly FileWriter _fileWriter;
     private readonly FileMover _fileMover;
     private readonly FileSystemOperations _fileSystemOperations;
-    
+    private readonly CommandHistoryManager _historyManager;
+    private readonly AliasManager _aliasManager;
     private readonly RebootCommand _rebootCommand;
     private readonly ShutdownCommand _shutdownCommand;
 
@@ -37,6 +38,8 @@ public class CommandProcessor
         this._fileSystemOperations = fileSystemOperations;
         this._rebootCommand = new RebootCommand();
         this._shutdownCommand = new ShutdownCommand();
+        _historyManager = new CommandHistoryManager();
+        _aliasManager = new AliasManager(_availableCommands);
     }
 
 
@@ -66,10 +69,28 @@ public class CommandProcessor
 
         Console.WriteLine($"Debug: Command - {command}, Args - {string.Join(", ", args)}");
 
+        _historyManager.AddCommand(input);
+        command = _aliasManager.GetCommand(command);
+
         try
         {
             switch (command)
             {
+                case "ls":
+                    _fileSystemOperations.ListDirectory(args.Length > 0
+                        ? args[0]
+                        : CurrentPathManager.CurrentDirectory);
+                    break;
+
+                case "mvdir":
+                    if (args.Length < 2)
+                        throw new ArgumentException(
+                            "Missing arguments for 'mvdir'. Usage: mvdir <source> <destination>");
+                    _fileSystemOperations.MoveDirectory(args[0], args[1]);
+                    break;
+                case "history":
+                    _historyManager.ShowHistory();
+                    break;
                 case "mkdir":
                     if (args.Length < 1)
                         throw new ArgumentException("Missing argument for 'mkdir'. Usage: mkdir <directory>");
@@ -77,23 +98,64 @@ public class CommandProcessor
                     Console.WriteLine($"Created directory {args[0]}");
                     break;
                 case "create":
-                    if (args.Length < 1)
-                        throw new ArgumentException("Missing argument for 'create'. Usage: create <filename>");
-                    _fileWriter.WriteFile(args[0], "");
-                    Console.WriteLine($"Created file {args[0]}");
+                    try
+                    {
+                        if (args.Length < 1)
+                            throw new ArgumentException("Missing argument for 'create'. Usage: create <filename>");
+
+                        _fileWriter.WriteFile(args[0], "");
+                        Console.WriteLine($"Created file {args[0]}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating file: {ex.Message}");
+                    }
+
                     break;
                 case "read":
-                    if (args.Length < 1)
-                        throw new ArgumentException("Missing argument for 'read'. Usage: read <filename>");
-                    var content = _fileReader.ReadFile(args[0]);
-                    Console.WriteLine(content);
+                    try
+                    {
+                        if (args.Length < 1)
+                            throw new ArgumentException("Missing argument for 'read'. Usage: read <filename>");
+
+                        var content = _fileReader.ReadFile(args[0]);
+                        Console.WriteLine($"File content:\n{content}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error reading file: {ex.Message}");
+                    }
+
                     break;
                 case "write":
-                    if (args.Length < 2)
-                        throw new ArgumentException(
-                            "Missing argument for 'write'. Usage: write <filename> <content>");
-                    _fileWriter.WriteFile(args[0], args[1]);
-                    Console.WriteLine($"Wrote to file {args[0]}");
+                    try 
+                    {
+                        if (args.Length < 2)
+                            throw new ArgumentException("Missing arguments for 'write'. Usage: write <filename> <content>");
+
+                        string filename = args[0];
+                        string content = string.Join(" ", args.Skip(1));
+                        
+                        if (filename.EndsWith(".bat"))
+                        {
+                            var batchContent = new StringBuilder();
+                            foreach (var line in content.Split(new[] {" && "}, StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                batchContent.AppendLine(line.Trim());
+                            }
+                            _fileWriter.WriteFile(filename, batchContent.ToString());
+                        }
+                        else
+                        {
+                            _fileWriter.WriteFile(filename, content);
+                        }
+
+                        Console.WriteLine($"Successfully wrote to {filename}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error writing file: {ex.Message}");
+                    }
                     break;
                 case "delete":
                     if (args.Length < 1)
@@ -170,19 +232,10 @@ public class CommandProcessor
                     Console.WriteLine($"Total capacity: {FileUtils.GetCapacity()}");
                     break;
                 case "help":
-                    Console.WriteLine("Available commands:");
-                    Console.WriteLine("create <filename> - Creates a new file");
-                    Console.WriteLine("read <filename> - Reads a file");
-                    Console.WriteLine("write <filename> <content> - Writes to a file");
-                    Console.WriteLine("delete <filename> - Deletes a file");
-                    Console.WriteLine("move <source> <destination> - Moves a file");
-                    break;
-                case "history":
-                    foreach (var item in _commandHistory)
-                    {
-                        Console.WriteLine(item);
-                    }
-
+                    if (args.Length > 0)
+                        ShowCommandHelp(args[0]);
+                    else
+                        ShowHelp();
                     break;
                 case "clearhistory":
                     _commandHistory.Clear();
@@ -225,41 +278,66 @@ public class CommandProcessor
         }
     }
 
-    public void InteractiveMode()
+    private void ShowHelp()
     {
-        var rootCommand = new RootCommand();
+        Console.WriteLine("Available commands:");
+        Console.WriteLine("File Operations:");
+        Console.WriteLine("  create <filename> - Creates a new empty file");
+        Console.WriteLine("  read <filename> - Displays file contents");
+        Console.WriteLine("  write <filename> <content> - Writes content to file");
+        Console.WriteLine("  delete <filename> - Deletes a file");
+        Console.WriteLine("  save <path> <content> - Saves binary content to file");
+        Console.WriteLine("  list [path] - Lists files in directory");
 
-        foreach (var command in _availableCommands)
-        {
-            rootCommand.AddCommand(new Command(command));
-        }
+        Console.WriteLine("\nDirectory Operations:");
+        Console.WriteLine("  mkdir <dirname> - Creates new directory");
+        Console.WriteLine("  rmdir <dirname> - Removes directory");
+        Console.WriteLine("  cd <path> - Changes current directory");
+        Console.WriteLine("  ls [path] - Lists directory contents");
+        Console.WriteLine("  mvdir <source> <dest> - Moves directory");
 
-        while (true)
-        {
-            Console.Write("> ");
-            var input = Console.ReadLine();
+        Console.WriteLine("\nFile/Directory Management:");
+        Console.WriteLine("  move <source> <dest> - Moves file");
+        Console.WriteLine("  rename <path> <newname> - Renames file/directory");
+        Console.WriteLine("  forceremove <path> - Forces removal of file/directory");
+        Console.WriteLine("  forcecopy <source> <dest> - Forces copy of file/directory");
 
-            if (input == "exit")
-            {
-                break;
-            }
-
-            try
-            {
-                var parseResult = rootCommand.Parse(input ?? throw new InvalidOperationException());
-                var command = parseResult.CommandResult.Command.Name;
-
-                ProcessCommand(command);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-        }
+        Console.WriteLine("\nSystem Commands:");
+        Console.WriteLine("  diskspace - Shows disk space information");
+        Console.WriteLine("  history - Shows command history");
+        Console.WriteLine("  clearhistory - Clears command history");
+        Console.WriteLine("  alias <name> <command> - Creates command alias");
+        Console.WriteLine("  batch <filename> - Executes commands from file");
+        Console.WriteLine("  shutdown - Shuts down the system");
+        Console.WriteLine("  reboot - Restarts the system");
     }
 
-    public void SetupAutocomplete()
+    private void ShowCommandHelp(string command)
     {
-        Console.WriteLine("Autocomplete setup. When typing a command, press Tab to see available options.");
+        var helpText = command switch
+        {
+            "create" => "Usage: create <filename> - Creates a new empty file",
+            "read" => "Usage: read <filename> - Displays contents of file",
+            "write" => "Usage: write <filename> <content> - Writes content to file",
+            "delete" => "Usage: delete <filename> - Deletes specified file",
+            "move" => "Usage: move <source> <destination> - Moves file to new location",
+            "mkdir" => "Usage: mkdir <directory> - Creates new directory",
+            "rmdir" => "Usage: rmdir <directory> - Removes directory",
+            "ls" => "Usage: ls [path] - Lists contents of directory",
+            "mvdir" => "Usage: mvdir <source> <destination> - Moves directory to new location",
+            "rename" => "Usage: rename <path> <newname> - Renames file or directory",
+            "forceremove" => "Usage: forceremove <path> - Forces removal of file or directory",
+            "forcecopy" => "Usage: forcecopy <source> <dest> - Forces copy of file or directory",
+            "save" => "Usage: save <path> <content> - Saves binary content to file",
+            "list" => "Usage: list [path] - Lists all files in directory",
+            "cd" => "Usage: cd <directory> - Changes current working directory",
+            "diskspace" => "Usage: diskspace - Shows disk space information",
+            "history" => "Usage: history - Shows command history",
+            "alias" => "Usage: alias <name> <command> - Creates command alias",
+            "batch" => "Usage: batch <filename> - Executes commands from file",
+            _ => $"No help available for '{command}'"
+        };
+
+        Console.WriteLine(helpText);
     }
 }

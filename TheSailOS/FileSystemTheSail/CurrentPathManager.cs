@@ -1,9 +1,9 @@
-﻿namespace TheSailOS.FileSystem;
+﻿namespace TheSailOS.FileSystemTheSail;
 
 public static class CurrentPathManager
 {
     public static string CurrentDirectory => Kernel.CurrentDirectory;
-    public static string UserDirectory { get; private set; } = @"L:\Users\Default\";
+    public static string UserDirectory { get; private set; } = @"0:\Users\Default\";
 
     public static bool Set(string dir, out string error)
     {

@@ -5,7 +5,7 @@ using System.Text;
 using Cosmos.System.FileSystem.VFS;
 using TheSailOS.Commands;
 using TheSailOS.Configuration;
-using TheSailOS.FileSystem;
+using TheSailOS.FileSystemTheSail;
 using TheSailOS.MemoryTheSail;
 using TheSailOS.ProcessTheSail;
 using Sys = Cosmos.System;

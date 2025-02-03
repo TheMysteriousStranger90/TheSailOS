@@ -1,6 +1,6 @@
 ﻿using Cosmos.System.FileSystem;
 
-namespace TheSailOS.FileSystem;
+namespace TheSailOS.FileSystemTheSail;
 
 public class FileTheSail
 {

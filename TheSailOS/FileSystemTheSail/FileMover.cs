@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace TheSailOS.FileSystem;
+namespace TheSailOS.FileSystemTheSail;
 
 public class FileMover
 {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Cosmos.System.FileSystem;
+using System.Threading;
 using Cosmos.System.FileSystem.Listing;
 
-namespace TheSailOS.FileSystem;
+namespace TheSailOS.FileSystemTheSail;
 
 public class FileWriter
 {
@@ -19,24 +19,37 @@ public class FileWriter
 
     public void WriteFile(string path, string content)
     {
-        path = Path.Combine(Kernel.CurrentDirectory, path);
-        var file = _fileTheSail._vfs.GetFile(path);
-        if (file == null)
+        try
         {
-            file = _fileTheSail._vfs.CreateFile(path);
-        }
+            path = Path.Combine(Kernel.CurrentDirectory, path);
+            var file = _fileTheSail._vfs.GetFile(path);
+        
+            // Create or truncate file
+            if (file == null)
+            {
+                file = _fileTheSail._vfs.CreateFile(path);
+            }
 
-        using (var stream = file.GetFileStream())
+            using (var stream = file.GetFileStream())
+            {
+                if (!stream.CanWrite)
+                    throw new IOException($"Cannot write to file {path}");
+
+                stream.SetLength(0); // Clear existing content
+            
+                if (!string.IsNullOrEmpty(content))
+                {
+                    byte[] textBytes = Encoding.ASCII.GetBytes(content);
+                    stream.Position = 0;
+                    stream.Write(textBytes, 0, textBytes.Length);
+                }
+            
+                stream.Flush();
+            }
+        }
+        catch (Exception ex)
         {
-            if (stream.CanWrite)
-            {
-                byte[] textBytes = Encoding.ASCII.GetBytes(content);
-                stream.Write(textBytes, 0, textBytes.Length);
-            }
-            else
-            {
-                throw new Exception($"Cannot write to file {path}");
-            }
+            throw new IOException($"Error writing to file {path}: {ex.Message}");
         }
     }
 
@@ -70,14 +83,7 @@ public class FileWriter
             throw new FileNotFoundException($"File {path} not found");
         }
     }
-
-    public bool FileExists(string path)
-    {
-        path = Path.Combine(Kernel.CurrentDirectory, path);
-        var file = _fileTheSail._vfs.GetFile(path);
-        return file != null;
-    }
-
+    
     public List<string> GetFileListing(string path)
     {
         path = Path.Combine(Kernel.CurrentDirectory, path);
