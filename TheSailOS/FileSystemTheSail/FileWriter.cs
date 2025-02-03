@@ -22,34 +22,65 @@ public class FileWriter
         try
         {
             path = Path.Combine(Kernel.CurrentDirectory, path);
+
+            // Check if file exists and get correct file type
             var file = _fileTheSail._vfs.GetFile(path);
-        
-            // Create or truncate file
-            if (file == null)
+            if (file != null)
             {
-                file = _fileTheSail._vfs.CreateFile(path);
+                Console.WriteLine($"File {path} already exists, updating content...");
+                UpdateFileContent(file, content);
+                return;
             }
 
+            // Create new file
+            Console.WriteLine($"Creating new file: {path}");
+            file = _fileTheSail._vfs.CreateFile(path);
+            
+            Thread.Sleep(100); // Wait for filesystem
+
+            if (file == null)
+            {
+                throw new IOException($"Failed to create file: {path}");
+            }
+
+            // Write initial content
+            if (!string.IsNullOrEmpty(content))
+            {
+                UpdateFileContent(file, content);
+            }
+
+            Console.WriteLine($"File created successfully: {path}");
+        }
+        catch (Exception ex)
+        {
+            throw new IOException($"Error in WriteFile: {ex.Message}");
+        }
+    }
+
+    private void UpdateFileContent(Cosmos.System.FileSystem.Listing.DirectoryEntry file, string content)
+    {
+        try
+        {
             using (var stream = file.GetFileStream())
             {
                 if (!stream.CanWrite)
-                    throw new IOException($"Cannot write to file {path}");
+                    throw new IOException("Cannot write to file stream");
 
-                stream.SetLength(0); // Clear existing content
-            
+                stream.Position = 0;
+                stream.SetLength(0);
+
                 if (!string.IsNullOrEmpty(content))
                 {
-                    byte[] textBytes = Encoding.ASCII.GetBytes(content);
-                    stream.Position = 0;
-                    stream.Write(textBytes, 0, textBytes.Length);
+                    var bytes = Encoding.ASCII.GetBytes(content);
+                    stream.Write(bytes, 0, bytes.Length);
                 }
-            
+
                 stream.Flush();
             }
         }
         catch (Exception ex)
         {
-            throw new IOException($"Error writing to file {path}: {ex.Message}");
+            throw new IOException($"Error updating file content: {ex.Message}");
         }
     }
 

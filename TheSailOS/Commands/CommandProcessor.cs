@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.CommandLine;
 using System.Text;
+using System.Threading;
 using TheSailOS.FileSystemTheSail;
 using TheSailOS.PowerSystem;
 
@@ -128,29 +129,33 @@ public class CommandProcessor
 
                     break;
                 case "write":
+                    if (args.Length < 2)
+                    {
+                        Console.WriteLine("Usage: write <filename> <content>");
+                        break;
+                    }
+    
                     try 
                     {
-                        if (args.Length < 2)
-                            throw new ArgumentException("Missing arguments for 'write'. Usage: write <filename> <content>");
-
                         string filename = args[0];
                         string content = string.Join(" ", args.Skip(1));
-                        
-                        if (filename.EndsWith(".bat"))
+        
+                        Console.WriteLine($"Writing to file: {filename}");
+                        Console.WriteLine($"Content: {content}");
+        
+                        _fileWriter.WriteFile(filename, content);
+                        Thread.Sleep(100); // Wait for filesystem
+        
+                        // Verify write
+                        var verification = _fileReader.ReadFile(filename);
+                        if (verification == content)
                         {
-                            var batchContent = new StringBuilder();
-                            foreach (var line in content.Split(new[] {" && "}, StringSplitOptions.RemoveEmptyEntries))
-                            {
-                                batchContent.AppendLine(line.Trim());
-                            }
-                            _fileWriter.WriteFile(filename, batchContent.ToString());
+                            Console.WriteLine($"Successfully wrote to {filename}");
                         }
                         else
                         {
-                            _fileWriter.WriteFile(filename, content);
+                            Console.WriteLine("Warning: File content verification failed");
                         }
-
-                        Console.WriteLine($"Successfully wrote to {filename}");
                     }
                     catch (Exception ex)
                     {
