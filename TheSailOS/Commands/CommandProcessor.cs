@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.CommandLine;
 using System.Text;
 using System.Threading;
 using TheSailOS.FileSystemTheSail;
+using TheSailOS.NetworkTheSail;
 using TheSailOS.PowerSystem;
 
 namespace TheSailOS.Commands;
 
 public class CommandProcessor
 {
+    private readonly NetworkCommandHandler _networkHandler;
     private readonly FileReader _fileReader;
     private readonly FileWriter _fileWriter;
     private readonly FileMover _fileMover;
@@ -26,7 +27,7 @@ public class CommandProcessor
     {
         "create", "read", "write", "delete", "move", "mkdir", "rmdir", "ls", "mvdir", "help", "history", "alias",
         "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace", "shutdown", "reboot", "pwd",
-        "back"
+        "back", "netinit", "connect", "disconnect", "send", "ping", "ftpstart", "ftpstop"
     };
 
     private Dictionary<string, string> _commandAliases = new Dictionary<string, string>();
@@ -42,6 +43,8 @@ public class CommandProcessor
         this._shutdownCommand = new ShutdownCommand();
         _historyManager = new CommandHistoryManager();
         _aliasManager = new AliasManager(_availableCommands);
+        
+        _networkHandler = new NetworkCommandHandler();
     }
 
 
@@ -298,7 +301,21 @@ public class CommandProcessor
                     {
                         Console.WriteLine($"Current directory changed to {CurrentPathManager.CurrentDirectory}");
                     }
+                    break;
+                case "netinit":
+                    Console.WriteLine("Debug: Routing netinit command to network handler");
+                    _networkHandler.HandleCommand("netinit", args);
+                    break;
 
+                case "connect":
+                case "disconnect":
+                case "send":
+                case "ping":
+                    _networkHandler.HandleCommand(command, args);
+                    break;
+                case "ftpstart":
+                case "ftpstop":
+                    _networkHandler.HandleCommand(command, args);
                     break;
                 default:
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -349,6 +366,15 @@ public class CommandProcessor
         Console.WriteLine("  batch <filename> - Executes commands from file");
         Console.WriteLine("  shutdown - Shuts down the system");
         Console.WriteLine("  reboot - Restarts the system");
+        
+        Console.WriteLine("\nNetwork Commands:");
+        Console.WriteLine("  netinit - Initialize network");
+        Console.WriteLine("  connect <tcp|udp> <id> <ip> <port> - Connect to remote host");
+        Console.WriteLine("  disconnect <id> - Disconnect from host");
+        Console.WriteLine("  send <id> <message> - Send data to connected host");
+        Console.WriteLine("  ping <ip> - Ping remote host");
+        Console.WriteLine("  ftpstart - Start FTP server");
+        Console.WriteLine("  ftpstop - Stop FTP server");
     }
 
     private void ShowCommandHelp(string command)

@@ -17,45 +17,6 @@ public class FileMover
         this._fileReader = fileReader;
         this._fileWriter = fileWriter;
     }
-/*
-    public void MoveFile(string sourcePath, string destinationPath)
-    {
-        try
-        {
-            sourcePath = Path.Combine(Kernel.CurrentDirectory, sourcePath);
-            destinationPath = Path.Combine(Kernel.CurrentDirectory, destinationPath);
-
-            var sourceFile = _fileTheSail._vfs.GetFile(sourcePath);
-            if (sourceFile == null)
-            {
-                throw new FileNotFoundException($"Source file {sourcePath} not found");
-            }
-
-            string destDir = Path.GetDirectoryName(destinationPath);
-            if (!string.IsNullOrEmpty(destDir) && _fileTheSail._vfs.GetDirectory(destDir) == null)
-            {
-                throw new DirectoryNotFoundException($"Destination directory {destDir} not found");
-            }
-
-            if (_fileTheSail._vfs.GetFile(destinationPath) != null)
-            {
-                throw new IOException($"Destination file {destinationPath} already exists");
-            }
-
-            string content = _fileReader.ReadFile(sourcePath);
-
-            _fileWriter.WriteFile(destinationPath, content);
-
-            _fileWriter.DeleteFile(sourcePath);
-
-            Thread.Sleep(100);
-        }
-        catch (Exception ex)
-        {
-            throw new IOException($"Failed to move file: {ex.Message}", ex);
-        }
-    }
-*/
 
     public void MoveFile(string sourcePath, string destinationPath)
     {
@@ -102,25 +63,33 @@ public class FileMover
         try
         {
             sourcePath = Path.Combine(Kernel.CurrentDirectory, sourcePath);
+            Console.WriteLine($"Source path: {sourcePath}");
 
             var sourceFile = _fileTheSail._vfs.GetFile(sourcePath);
             if (sourceFile == null)
             {
-                throw new FileNotFoundException($"Source file {sourcePath} not found");
+                throw new FileNotFoundException($"Source file not found: {sourcePath}");
             }
+            
+            string sourceDir = Path.GetDirectoryName(sourcePath);
+            string newPath = Path.Combine(sourceDir, newName);
+            Console.WriteLine($"New path: {newPath}");
 
-            var newPath = Path.Combine(Path.GetDirectoryName(sourcePath), newName);
-            newPath = Path.Combine(Kernel.CurrentDirectory, newPath);
+            if (_fileTheSail._vfs.GetFile(newPath) != null)
+            {
+                throw new IOException($"File already exists: {newPath}");
+            }
+            
+            string content = _fileReader.ReadFile(sourcePath);
+            _fileWriter.WriteFile(newPath, content);
+            _fileWriter.DeleteFile(sourcePath);
 
-            MoveFile(sourcePath, newPath);
-        }
-        catch (FileNotFoundException ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"File renamed successfully to: {newPath}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.WriteLine($"Rename failed: {ex.Message}");
+            throw;
         }
     }
 }

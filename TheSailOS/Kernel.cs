@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Cosmos.System.FileSystem.VFS;
 using TheSailOS.Commands;
 using TheSailOS.Configuration;
 using TheSailOS.FileSystemTheSail;
 using TheSailOS.MemoryTheSail;
+using TheSailOS.NetworkTheSail;
 using TheSailOS.ProcessTheSail;
 using Sys = Cosmos.System;
 
@@ -14,6 +12,10 @@ namespace TheSailOS
 {
     public class Kernel : Sys.Kernel
     {
+        private NetworkService _networkService;
+        private NetworkCommandHandler _networkCommandHandler;
+        private FtpServer _ftpServer;
+        
         private ProcessManager _processManager;
         private EnhancedMemoryManager _memoryManager;
         private VirtualMemoryManager _virtualMemoryManager;
@@ -36,6 +38,7 @@ namespace TheSailOS
             InitializeMemoryManagement();
             InitializeProcessManagement();
             InitializeSystemProcesses();
+            InitializeNetwork();
             
             Console.WriteLine($"TheSail OS {VersionOs} booted successfully.");
             Console.WriteLine("Type 'help' for available commands.");
@@ -110,6 +113,24 @@ namespace TheSailOS
             catch (Exception ex)
             {
                 Console.WriteLine($"Monitor error: {ex.Message}");
+            }
+        }
+        
+        private void InitializeNetwork()
+        {
+            try
+            {
+                _networkService = NetworkService.Instance;
+                _networkCommandHandler = new NetworkCommandHandler();
+            
+                if (_networkService.Initialize())
+                {
+                    Console.WriteLine("[Network] System initialized");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Network] Init failed: {ex.Message}");
             }
         }
 
