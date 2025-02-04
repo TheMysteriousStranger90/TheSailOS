@@ -37,18 +37,23 @@ namespace TheSailOS
         protected override void BeforeRun()
         {
             Console.WriteLine("Initializing TheSail OS...");
-            
             InitializeMemoryManagement();
+            Console.WriteLine("[Memory] System initialized");
+
+            // 2. Process Management
             InitializeProcessManagement();
+            Console.WriteLine("[Process] System initialized");
+            
+            // 3. File System
             InitializeFileSystem();
+            Console.WriteLine("[FileSystem] System initialized");
         }
         
         private void InitializeFileSystem()
         {
             TheSailOSCfg.Load();
             CurrentFileTheSail = new FileTheSail();
-            VFSManager.RegisterVFS(CurrentFileTheSail._vfs);
-
+            
             var fileReader = new FileReader(CurrentFileTheSail);
             var fileWriter = new FileWriter(CurrentFileTheSail);
             var fileMover = new FileMover(CurrentFileTheSail, fileReader, fileWriter);

@@ -16,11 +16,9 @@ public class FileTheSail
         try
         {
             this._vfs = new CosmosVFS();
-            
-            /*
+
             Thread.Sleep(1000);
             VFSManager.RegisterVFS(_vfs);
-            
             
             var available = _vfs.GetVolumes();
             if (available != null && available.Count > 0)
@@ -32,7 +30,6 @@ public class FileTheSail
             {
                 throw new IOException("No volumes available");
             }
-            */
         }
         catch (Exception ex)
         {

@@ -12,6 +12,8 @@ public class TheSailOSCfg
     private static DateTime InstallDate { get; set; } = DateTime.Now;
     public static bool BootLock { get; set; } = false;
     private static string InstallVer { get; set; } = Kernel.VersionOs;
+    public static string DefaultUser { get; set; } = "admin";
+    public static string DefaultPassword { get; set; } = "password";
 
     internal static void Load()
     {
@@ -19,7 +21,7 @@ public class TheSailOSCfg
         {
             if (!File.Exists(_path))
             {
-                Flush();
+                Save();
                 return;
             }
 
@@ -30,6 +32,8 @@ public class TheSailOSCfg
             InstallDate = new DateTime(long.Parse(sectionValues["SysMeta"]["InstallDate"]));
             InstallVer = sectionValues["SysMeta"]["InstallVer"];
             BootLock = bool.Parse(sectionValues["Config"]["BootLock"]);
+            DefaultUser = sectionValues["Config"]["DefaultUser"];
+            DefaultPassword = sectionValues["Config"]["DefaultPassword"];
         }
         catch (Exception ex)
         {
@@ -37,21 +41,30 @@ public class TheSailOSCfg
         }
     }
 
-    private static void Flush()
+    internal static void Save()
     {
-        var builder = new StringBuilder();
-        AppendSection(builder, "SysMeta", new Dictionary<string, string>
+        try
         {
-            ["NameOs"] = NameOs,
-            ["InstallDate"] = InstallDate.Ticks.ToString(),
-            ["InstallVer"] = InstallVer
-        });
-        AppendSection(builder, "Config", new Dictionary<string, string>
-        {
-            ["BootLock"] = BootLock.ToString()
-        });
+            var builder = new StringBuilder();
+            AppendSection(builder, "SysMeta", new Dictionary<string, string>
+            {
+                ["NameOs"] = NameOs,
+                ["InstallDate"] = InstallDate.Ticks.ToString(),
+                ["InstallVer"] = InstallVer
+            });
+            AppendSection(builder, "Config", new Dictionary<string, string>
+            {
+                ["BootLock"] = BootLock.ToString(),
+                ["DefaultUser"] = DefaultUser,
+                ["DefaultPassword"] = DefaultPassword
+            });
 
-        File.WriteAllText(_path, builder.ToString());
+            File.WriteAllText(_path, builder.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving configuration: {ex.Message}");
+        }
     }
 
     private static void AppendSection(StringBuilder builder, string sectionName, Dictionary<string, string> values)
