@@ -13,8 +13,13 @@ public class ProcessManager
     public ProcessManager()
     {
         _processes = new List<Process>();
-        _scheduler = new Scheduler(this);
+        _scheduler = new Scheduler();
         _processTable = new Dictionary<int, Process>();
+    }
+
+    public SchedulerStatistics GetSchedulerStatistics()
+    {
+        return _scheduler.GetStatistics();
     }
 
     public Process CreateProcess(string name, Action action, int priority = 1)
@@ -45,6 +50,7 @@ public class ProcessManager
             _scheduler.BlockProcess(process);
             return true;
         }
+
         return false;
     }
 
@@ -55,19 +61,20 @@ public class ProcessManager
             _scheduler.UnblockProcess(process);
             return true;
         }
+
         return false;
     }
-    
+
     public void ListProcesses()
     {
         Console.WriteLine("\nRunning Processes:");
         Console.WriteLine("PID\tName\t\tState\t\tPriority");
         Console.WriteLine("----------------------------------------");
-        
+
         foreach (var process in _processes)
         {
             Console.WriteLine($"{process.PID}\t{process.Name,-15}\t{process.State,-12}\t{process.Priority}");
-            
+
             if (process.Children.Count > 0)
             {
                 foreach (var child in process.Children)
@@ -76,17 +83,35 @@ public class ProcessManager
                 }
             }
         }
+
         Console.WriteLine($"\nTotal Processes: {_processes.Count}");
     }
 
-    public ProcessStatistics GetProcessStatistics()
+    public ProcessSnapshot GetProcessSnapshot(int pid)
     {
-        return new ProcessStatistics
+        return _processTable.TryGetValue(pid, out var process)
+            ? process.CreateSnapshot()
+            : null;
+    }
+
+    public void SetProcessPriority(int pid, int newPriority)
+    {
+        if (_processTable.TryGetValue(pid, out var process))
         {
-            TotalProcesses = _processes.Count,
-            RunningProcesses = _processes.Count(p => p.State == ProcessState.Running),
-            BlockedProcesses = _processes.Count(p => p.State == ProcessState.Blocked),
-            ReadyProcesses = _processes.Count(p => p.State == ProcessState.Ready)
-        };
+            process.UpdatePriority(newPriority);
+            _scheduler.RescheduleProcess(process);
+        }
+    }
+
+    public List<ProcessSnapshot> GetAllProcessSnapshots()
+    {
+        return _processes.Select(p => p.CreateSnapshot()).ToList();
+    }
+
+    public ProcessStatistics GetProcessStatistics(int pid)
+    {
+        return _processTable.TryGetValue(pid, out var process)
+            ? process.Statistics
+            : null;
     }
 }

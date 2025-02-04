@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Drawing;
 using Cosmos.System.FileSystem.VFS;
+using Cosmos.System.Graphics;
 using TheSailOS.Commands;
 using TheSailOS.Configuration;
 using TheSailOS.FileSystemTheSail;
@@ -12,6 +14,7 @@ namespace TheSailOS
 {
     public class Kernel : Sys.Kernel
     {
+        private Canvas _canvas;
         private NetworkService _networkService;
         private NetworkCommandHandler _networkCommandHandler;
         private FtpServer _ftpServer;
@@ -34,14 +37,10 @@ namespace TheSailOS
         protected override void BeforeRun()
         {
             Console.WriteLine("Initializing TheSail OS...");
-            InitializeFileSystem();
+            
             InitializeMemoryManagement();
             InitializeProcessManagement();
-            InitializeSystemProcesses();
-            InitializeNetwork();
-            
-            Console.WriteLine($"TheSail OS {VersionOs} booted successfully.");
-            Console.WriteLine("Type 'help' for available commands.");
+            InitializeFileSystem();
         }
         
         private void InitializeFileSystem()
@@ -55,7 +54,12 @@ namespace TheSailOS
             var fileMover = new FileMover(CurrentFileTheSail, fileReader, fileWriter);
             var fileSystemOperations = new FileSystemOperations(CurrentFileTheSail);
 
-            _commandProcessor = new CommandProcessor(fileReader, fileWriter, fileMover, fileSystemOperations);
+            _commandProcessor = new CommandProcessor(
+                fileReader, 
+                fileWriter, 
+                fileMover, 
+                fileSystemOperations,
+                _processManager);
         }
         
         private void InitializeProcessManagement()
@@ -145,3 +149,50 @@ namespace TheSailOS
         }
     }
 }
+
+/*
+
+    protected override void BeforeRun()
+    {
+        Console.WriteLine("Initializing TheSail OS...");
+        
+        // 1. Memory Management
+        InitializeMemoryManagement();
+        Console.WriteLine("[Memory] System initialized");
+
+        // 2. Process Management
+        InitializeProcessManagement();
+        Console.WriteLine("[Process] System initialized");
+
+        // 3. File System
+        TheSailOSCfg.Load();
+        CurrentFileTheSail = new FileTheSail();
+        VFSManager.RegisterVFS(CurrentFileTheSail._vfs);
+        InitializeFileSystem();
+        Console.WriteLine("[FileSystem] System initialized");
+
+        // 4. System Processes
+        InitializeSystemProcesses();
+        Console.WriteLine("[System] Processes initialized");
+
+        // 5. Network
+        InitializeNetwork();
+        
+        // Set system as running
+        _isRunning = true;
+        
+        Console.WriteLine($"TheSail OS {VersionOs} booted successfully.");
+        Console.WriteLine("Type 'help' for available commands.");
+    }
+
+    protected override void Run()
+    {
+        if (!_isRunning) return;
+
+        Console.Write($"{CurrentDirectory}> ");
+        var input = Console.ReadLine();
+
+        _commandProcessor.ProcessCommand(input);
+        _processManager.UpdateProcessState();
+    }
+    */

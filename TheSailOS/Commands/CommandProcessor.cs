@@ -6,6 +6,7 @@ using System.Threading;
 using TheSailOS.FileSystemTheSail;
 using TheSailOS.NetworkTheSail;
 using TheSailOS.PowerSystem;
+using TheSailOS.ProcessTheSail;
 
 namespace TheSailOS.Commands;
 
@@ -20,6 +21,7 @@ public class CommandProcessor
     private readonly AliasManager _aliasManager;
     private readonly RebootCommand _rebootCommand;
     private readonly ShutdownCommand _shutdownCommand;
+    private readonly ProcessManager _processManager;
 
     private List<string> _commandHistory = new List<string>();
 
@@ -27,13 +29,13 @@ public class CommandProcessor
     {
         "create", "read", "write", "delete", "move", "mkdir", "rmdir", "ls", "mvdir", "help", "history", "alias",
         "batch", "rename", "forceremove", "forcecopy", "save", "list", "cd", "diskspace", "shutdown", "reboot", "pwd",
-        "back", "netinit", "connect", "disconnect", "send", "ping", "ftpstart", "ftpstop"
+        "back", "netinit", "connect", "disconnect", "send", "ping", "ftpstart", "ftpstop", "ps", "kill", "priority", "pinfo", "pstat", "childproc"
     };
 
     private Dictionary<string, string> _commandAliases = new Dictionary<string, string>();
 
     public CommandProcessor(FileReader fileReader, FileWriter fileWriter, FileMover fileMover,
-        FileSystemOperations fileSystemOperations)
+        FileSystemOperations fileSystemOperations, ProcessManager processManager)
     {
         this._fileReader = fileReader;
         this._fileWriter = fileWriter;
@@ -45,6 +47,7 @@ public class CommandProcessor
         _aliasManager = new AliasManager(_availableCommands);
         
         _networkHandler = new NetworkCommandHandler();
+        _processManager = processManager ?? throw new ArgumentNullException(nameof(processManager));
     }
 
 
@@ -317,6 +320,68 @@ public class CommandProcessor
                 case "ftpstop":
                     _networkHandler.HandleCommand(command, args);
                     break;
+                
+                
+                
+                
+                case "ps":
+                    try
+                    {
+                        _processManager.ListProcesses();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error listing processes: {ex.Message}");
+                    }
+                    break;
+
+                case "kill":
+                    if (args.Length < 1)
+                    {
+                        Console.WriteLine("Usage: kill <pid>");
+                        break;
+                    }
+                    if (int.TryParse(args[0], out int pid))
+                    {
+                        _processManager.BlockProcess(pid);
+                    }
+                    break;
+
+                case "priority":
+                    if (args.Length < 2)
+                    {
+                        Console.WriteLine("Usage: priority <pid> <priority>");
+                        break;
+                    }
+                    if (int.TryParse(args[0], out int p) && int.TryParse(args[1], out int prio))
+                    {
+                        _processManager.SetProcessPriority(p, prio);
+                    }
+                    break;
+
+                case "pinfo":
+                    if (args.Length < 1)
+                    {
+                        Console.WriteLine("Usage: pinfo <pid>");
+                        break;
+                    }
+                    if (int.TryParse(args[0], out int procId))
+                    {
+                        var snapshot = _processManager.GetProcessSnapshot(procId);
+                        if (snapshot != null)
+                        {
+                            Console.WriteLine(snapshot.ToString());
+                        }
+                    }
+                    break;
+
+                case "pstat":
+                    var stats = _processManager.GetSchedulerStatistics();
+                    Console.WriteLine($"Scheduler Statistics:");
+                    Console.WriteLine($"Context Switches: {stats.ContextSwitches}");
+                    Console.WriteLine($"Preemptions: {stats.Preemptions}");
+                    Console.WriteLine($"Blocked Processes: {stats.BlockedProcesses}");
+                    break;
                 default:
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
                     Console.WriteLine("Unknown command. Type 'help' to see available commands.");
@@ -375,6 +440,13 @@ public class CommandProcessor
         Console.WriteLine("  ping <ip> - Ping remote host");
         Console.WriteLine("  ftpstart - Start FTP server");
         Console.WriteLine("  ftpstop - Stop FTP server");
+        
+        Console.WriteLine("\nProcess Management:");
+        Console.WriteLine("  ps - List all processes");
+        Console.WriteLine("  kill <pid> - Terminate a process");
+        Console.WriteLine("  priority <pid> <priority> - Set process priority");
+        Console.WriteLine("  pinfo <pid> - Show process information");
+        Console.WriteLine("  pstat - Show scheduler statistics");
     }
 
     private void ShowCommandHelp(string command)

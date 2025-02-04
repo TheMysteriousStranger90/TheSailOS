@@ -2,14 +2,10 @@
 
 public class MemoryBlock
 {
-    public int Address { get; set; }
-    public int Size { get; set; }
-    public bool IsAllocated { get; set; }
-
-    public MemoryBlock(int address, int size)
-    {
-        Address = address;
-        Size = size;
-        IsAllocated = false;
-    }
+    public uint Address { get; set; }
+    public uint Size { get; set; }
+    public int PageCount { get; set; }
+    public MemoryPermissions Permissions { get; set; }
+    public bool IsGCManaged { get; set; }
+    public int ReferenceCount { get; set; }
 }
