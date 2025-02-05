@@ -26,43 +26,26 @@ public class NetworkService
     {
         try
         {
-            var device = NetworkDeviceManager.GetPrimaryDevice();
-            if (device == null)
+            NotifyStatus("Starting network initialization...");
+        
+            if (!NetworkManager.Initialize(NotifyStatus))
             {
-                NotifyStatus("No network device available");
+                NotifyStatus("Network initialization failed");
                 return false;
             }
 
-            NotifyStatus($"Using device: {device.Name}");
-
-            if (!device.Ready)
+            if (NetworkManager.IsNetworkAvailable())
             {
-                NotifyStatus("Network device not ready");
-                return false;
+                NotifyStatus($"Network initialized, IP: {NetworkManager.GetCurrentIP()}");
+                return true;
             }
 
-            if (useDhcp)
-            {
-                if (!NetworkManager.Initialize(NotifyStatus))
-                {
-                    NotifyStatus("DHCP configuration failed");
-                    return false;
-                }
-            }
-            else
-            {
-                var defaultIp = new Address(192, 168, 1, 100);
-                var defaultMask = new Address(255, 255, 255, 0);
-                var defaultGateway = new Address(192, 168, 1, 1);
-                NetworkManager.ConfigureManual(defaultIp, defaultMask, defaultGateway);
-            }
-
-            NotifyStatus("Network initialized successfully");
-            return true;
+            NotifyStatus("Network not available after initialization");
+            return false;
         }
         catch (Exception ex)
         {
-            NotifyStatus($"Network initialization failed: {ex.Message}");
+            NotifyStatus($"Fatal error: {ex.Message}");
             return false;
         }
     }

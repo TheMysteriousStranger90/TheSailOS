@@ -6,7 +6,7 @@ namespace TheSailOS.NetworkTheSail;
 
 public static class NetworkDeviceManager
 {
-    private const string DEFAULT_ADAPTER = "wlan0";
+    private const string DEFAULT_ADAPTER = "eth0";
     
     private static readonly string[] KnownAdapters = 
     {
