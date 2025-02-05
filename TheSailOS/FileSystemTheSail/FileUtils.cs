@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using Cosmos.System.FileSystem.VFS;
 
 namespace TheSailOS.FileSystemTheSail;
 
@@ -53,5 +55,14 @@ public class FileUtils
             i++;
         }
         return $"{size:0.##} {suffixes[i]}";
+    }
+    
+    public static void MountAllDisks()
+    {
+        foreach (var disk in VFSManager.GetDisks())
+        {
+            Console.WriteLine($"[INFO] Mounting disk {VFSManager.GetDisks().IndexOf(disk)}...");
+            disk.Mount();
+        }
     }
 }

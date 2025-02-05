@@ -188,4 +188,10 @@ public class FileSystemOperations
             CopyDirectory(sourcePath, destPath);
         }
     }
+    
+    public Cosmos.System.FileSystem.Listing.DirectoryEntry GetFileInfo(string file)
+    {
+        var fullPath = Path.Combine(Kernel.CurrentDirectory, file);
+        return _fileTheSail._vfs.GetFile(fullPath);
+    }
 }

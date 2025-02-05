@@ -26,9 +26,28 @@ public class NetworkService
     {
         try
         {
+            var device = NetworkDeviceManager.GetPrimaryDevice();
+            if (device == null)
+            {
+                NotifyStatus("No network device available");
+                return false;
+            }
+
+            NotifyStatus($"Using device: {device.Name}");
+
+            if (!device.Ready)
+            {
+                NotifyStatus("Network device not ready");
+                return false;
+            }
+
             if (useDhcp)
             {
-                NetworkManager.ConfigureDHCP();
+                if (!NetworkManager.Initialize(NotifyStatus))
+                {
+                    NotifyStatus("DHCP configuration failed");
+                    return false;
+                }
             }
             else
             {
@@ -38,7 +57,7 @@ public class NetworkService
                 NetworkManager.ConfigureManual(defaultIp, defaultMask, defaultGateway);
             }
 
-            NotifyStatus($"Network initialized, IP: {NetworkManager.GetCurrentIP()}");
+            NotifyStatus("Network initialized successfully");
             return true;
         }
         catch (Exception ex)

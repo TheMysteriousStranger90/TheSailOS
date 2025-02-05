@@ -16,10 +16,14 @@ public class FileTheSail
         try
         {
             this._vfs = new CosmosVFS();
-
             Thread.Sleep(1000);
             VFSManager.RegisterVFS(_vfs);
-            
+            /*
+            foreach (var disk in VFSManager.GetDisks())
+            {
+                disk.Mount();
+            }
+            */
             var available = _vfs.GetVolumes();
             if (available != null && available.Count > 0)
             {

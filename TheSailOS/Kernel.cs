@@ -2,6 +2,7 @@
 using System.Drawing;
 using Cosmos.System.FileSystem.VFS;
 using Cosmos.System.Graphics;
+using Cosmos.System.Network.Config;
 using TheSailOS.Commands;
 using TheSailOS.Configuration;
 using TheSailOS.FileSystemTheSail;
@@ -47,6 +48,10 @@ namespace TheSailOS
             // 3. File System
             InitializeFileSystem();
             Console.WriteLine("[FileSystem] System initialized");
+            
+            InitializeNetwork();
+            Console.WriteLine("[Network] System initialized");
+            
         }
         
         private void InitializeFileSystem()
@@ -129,17 +134,48 @@ namespace TheSailOS
         {
             try
             {
+                if (!NetworkDeviceManager.HasNetworkDevice())
+                {
+                    Console.WriteLine("[Network] No network devices found");
+                    return;
+                }
+
                 _networkService = NetworkService.Instance;
                 _networkCommandHandler = new NetworkCommandHandler();
-            
+                
+                var networkStatus = new NetworkStatus();
+                
+                _networkService.SetStatusCallback(status => 
+                {
+                    Console.WriteLine($"[Network] {status}");
+                    
+                    networkStatus.IsConnected = NetworkManager.IsNetworkAvailable();
+                    //NetworkConfiguration.CurrentAddress;
+                });
+                
                 if (_networkService.Initialize())
                 {
                     Console.WriteLine("[Network] System initialized");
+                    Console.WriteLine(networkStatus.ToString());
+                    
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Network] Init failed: {ex.Message}");
+            }
+        }
+
+        private void InitializeFtpServer()
+        {
+            try 
+            {
+                var ftpServer = new FtpServer(Kernel.CurrentFileTheSail._vfs, @"0:\FTP");
+                ftpServer.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[FTP] Init failed: {ex.Message}");
             }
         }
 
