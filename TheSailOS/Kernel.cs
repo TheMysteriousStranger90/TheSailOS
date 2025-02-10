@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Drawing;
-using Cosmos.System.FileSystem.VFS;
 using Cosmos.System.Graphics;
-using Cosmos.System.Network.Config;
-using TheSailOS.Commands;
-using TheSailOS.Configuration;
+using TheSailOS.CommandsTheSailTwo;
 using TheSailOS.FileSystemTheSail;
 using TheSailOS.MemoryTheSail;
 using TheSailOS.NetworkTheSail;
@@ -15,6 +11,10 @@ namespace TheSailOS
 {
     public class Kernel : Sys.Kernel
     {
+        private FileSystem _fileSystem;
+        private CommandProcessor _commandProcessor;
+        
+        
         private Canvas _canvas;
         private NetworkService _networkService;
         private NetworkCommandHandler _networkCommandHandler;
@@ -27,8 +27,6 @@ namespace TheSailOS
         public static string VersionOs = "0.0.1";
         private bool _isRunning;
         public static FileTheSail CurrentFileTheSail;
-
-        private CommandProcessor _commandProcessor;
 
         public static void SetCurrentDirectory(string path)
         {
@@ -56,20 +54,23 @@ namespace TheSailOS
         
         private void InitializeFileSystem()
         {
-            TheSailOSCfg.Load();
-            CurrentFileTheSail = new FileTheSail();
+            Console.WriteLine("Cosmos booted successfully. Initializing file system...");
             
-            var fileReader = new FileReader(CurrentFileTheSail);
-            var fileWriter = new FileWriter(CurrentFileTheSail);
-            var fileMover = new FileMover(CurrentFileTheSail, fileReader, fileWriter);
-            var fileSystemOperations = new FileSystemOperations(CurrentFileTheSail);
-
-            _commandProcessor = new CommandProcessor(
-                fileReader, 
-                fileWriter, 
-                fileMover, 
-                fileSystemOperations,
-                _processManager);
+            _fileSystem = new ();
+            _fileSystem.Initialize();
+            
+            _commandProcessor = new CommandProcessor(_fileSystem);
+            
+            Console.WriteLine("File system initialized.");
+        }
+        
+        protected override void Run()
+        {
+            Console.Write(">");
+            string input = Console.ReadLine();
+            _commandProcessor.ProcessCommand(input);
+            
+            Run();
         }
         
         private void InitializeProcessManagement()
@@ -179,6 +180,10 @@ namespace TheSailOS
             }
         }
 
+        
+        
+        
+        /*
         protected override void Run()
         {
             Console.Write($"{CurrentDirectory}> ");
@@ -188,6 +193,7 @@ namespace TheSailOS
             
             _processManager.UpdateProcessState();
         }
+        */
     }
 }
 
