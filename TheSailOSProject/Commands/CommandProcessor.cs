@@ -62,6 +62,8 @@ public class CommandProcessor
 
             { "dns", new DnsCommand() },
             { "ping", new PingCommand() },
+            { "netshutdown", new NetworkShutdownCommand() },
+            { "netconfig", new NetworkConfigureCommand() },
 
             { "memory", new MemoryCommand() },
             { "freespace", new FreeSpaceCommand(vfsManager) },
@@ -131,6 +133,8 @@ public class CommandProcessor
             { "dns", "Performs a DNS lookup for the specified domain.\nUsage: dns <domain>" },
             { "httpget", "Retrieves the content of a web page.\nUsage: httpget <url>" },
             { "ping", "Pings the specified IP address.\nUsage: ping <ip_address>" },
+            {"netshutdown", "Shuts down the network.\nUsage: netshutdown"},
+            {"netconfig", "Configures the network.\nUsage: netconfig"},
             { "memory", "Displays memory information.\nUsage: memory" },
             { "freespace", "Displays available free space on a drive.\nUsage: freespace <drive>" },
             { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" } 

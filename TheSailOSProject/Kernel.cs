@@ -10,11 +10,12 @@ using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Memory;
+using TheSailOSProject.Network;
 using Sys = Cosmos.System;
 
 namespace TheSailOSProject
 {
-   public class Kernel : Sys.Kernel
+    public class Kernel : Sys.Kernel
     {
         private TheSailFileSystem _fileSystem;
         private CommandProcessor _commandProcessor;
@@ -26,13 +27,13 @@ namespace TheSailOSProject
         protected override void BeforeRun()
         {
             Console.WriteLine("Cosmos booted successfully.");
-            
+
             InitializeMemoryManager();
             Console.WriteLine("[MemoryManager] Initialized");
 
             InitializeFileSystem();
             Console.WriteLine("[FileSystem] System initialized");
-            
+
             InitializeNetwork();
             Console.WriteLine("[Network] System initialized");
 
@@ -54,11 +55,11 @@ namespace TheSailOSProject
             _fileSystem = new TheSailFileSystem();
             _fileSystem.Initialize();
         }
-        
+
         private void InitializeMemoryManager()
         {
             Console.WriteLine("Initializing Memory Manager...");
-            
+
             MemoryManager.Initialize();
         }
 
@@ -76,42 +77,15 @@ namespace TheSailOSProject
                 _historyManager,
                 _currentDirectoryManager,
                 _rootDirectoryProvider,
-                _fileSystem 
+                _fileSystem
             );
         }
-        
+
         private void InitializeNetwork()
         {
-            try
-            {
-                using (var dhcp = new DHCPClient())
-                {
-                    Console.WriteLine("Sending DHCP Discover packet...");
-                    if (dhcp.SendDiscoverPacket() != -1)
-                    {
-                        Console.WriteLine($"IP Address: {NetworkConfiguration.CurrentAddress}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("[WARNING] DHCP failed. Please configure network manually.");
-                        
-                        NetworkDevice nic = NetworkDevice.GetDeviceByName("eth0");
-                        if (nic != null)
-                        {
-                            IPConfig.Enable(nic, new Address(192, 168, 1, 69), new Address(255, 255, 255, 0), new Address(192, 168, 1, 254));
-                            Console.WriteLine($"Static IP configuration applied: IP={NetworkConfiguration.CurrentAddress}");
-                        }
-                        else
-                        {
-                            Console.WriteLine("[ERROR] Network device 'eth0' not found.");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] Network initialization failed: {ex.Message}");
-            }
+            Console.WriteLine("Initializing network...");
+            
+            NetworkManager.Initialize();
         }
     }
 }
