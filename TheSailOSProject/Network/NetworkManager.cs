@@ -66,11 +66,16 @@ public static class NetworkManager
                 else
                 {
                     Console.WriteLine("[WARNING] DHCP failed. Please configure network manually.");
-                        
+
                     NetworkDevice nic = NetworkDevice.GetDeviceByName("eth0");
                     if (nic != null)
                     {
-                        IPConfig.Enable(nic, new Address(192, 168, 1, 69), new Address(255, 255, 255, 0), new Address(192, 168, 1, 254));
+                        IPConfig.Enable(nic,
+                            new Address(192, 168, 146, 0), // VM IP
+                            new Address(255, 255, 255, 0), // Subnet mask
+                            new Address(192, 168, 146, 2)); // Gateway
+
+                        DNSConfig.Add(new Address(8, 8, 8, 8));
                         Console.WriteLine($"Static IP configuration applied: IP={NetworkConfiguration.CurrentAddress}");
                     }
                     else
