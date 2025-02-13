@@ -64,7 +64,7 @@ public class CommandProcessor
             { "ping", new PingCommand() },
             { "netshutdown", new NetworkShutdownCommand() },
             { "netconfig", new NetworkConfigureCommand() },
-
+            { "netstatus", new NetworkStatusCommand() },
             { "memory", new MemoryCommand() },
             { "freespace", new FreeSpaceCommand(vfsManager) },
             { "fstype", new FileSystemTypeCommand(vfsManager) }
@@ -135,6 +135,7 @@ public class CommandProcessor
             { "ping", "Pings the specified IP address.\nUsage: ping <ip_address>" },
             {"netshutdown", "Shuts down the network.\nUsage: netshutdown"},
             {"netconfig", "Configures the network.\nUsage: netconfig"},
+            {"netstatus", "Displays network status.\nUsage: netstatus"},
             { "memory", "Displays memory information.\nUsage: memory" },
             { "freespace", "Displays available free space on a drive.\nUsage: freespace <drive>" },
             { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" } 
