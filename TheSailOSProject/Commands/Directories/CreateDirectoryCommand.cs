@@ -1,7 +1,7 @@
 ﻿using System;
 using TheSailOSProject.FileSystem;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Directories;
 
 public class CreateDirectoryCommand : ICommand
 {

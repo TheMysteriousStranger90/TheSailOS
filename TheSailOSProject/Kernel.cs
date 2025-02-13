@@ -6,6 +6,8 @@ using Cosmos.System.Network.Config;
 using Cosmos.System.Network.IPv4;
 using Cosmos.System.Network.IPv4.UDP.DHCP;
 using TheSailOSProject.Commands;
+using TheSailOSProject.Commands.Directories;
+using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Memory;
 using Sys = Cosmos.System;
@@ -73,7 +75,8 @@ namespace TheSailOSProject
                 _fileSystem,
                 _historyManager,
                 _currentDirectoryManager,
-                _rootDirectoryProvider
+                _rootDirectoryProvider,
+                _fileSystem 
             );
         }
         

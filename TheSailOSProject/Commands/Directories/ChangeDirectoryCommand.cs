@@ -2,7 +2,7 @@
 using System.IO;
 using TheSailOSProject.FileSystem;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Directories;
 
 public class ChangeDirectoryCommand : ICommand
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Helpers;
 
 public class CommandHistoryManager : ICommandHistoryManager
 {

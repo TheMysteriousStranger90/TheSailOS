@@ -1,4 +1,4 @@
-﻿namespace TheSailOSProject.Commands;
+﻿namespace TheSailOSProject.Commands.Directories;
 
 public interface ICurrentDirectoryManager
 {

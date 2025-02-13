@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Directories;
 
 public class PrintWorkingDirectoryCommand : ICommand
 {

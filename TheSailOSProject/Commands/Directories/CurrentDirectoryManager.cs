@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Directories;
 
 public class CurrentDirectoryManager : ICurrentDirectoryManager
 {

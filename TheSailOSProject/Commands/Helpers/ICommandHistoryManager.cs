@@ -1,4 +1,4 @@
-﻿namespace TheSailOSProject.Commands;
+﻿namespace TheSailOSProject.Commands.Helpers;
 
 public interface ICommandHistoryManager
 {

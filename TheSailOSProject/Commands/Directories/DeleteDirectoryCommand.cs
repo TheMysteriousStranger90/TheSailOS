@@ -1,18 +1,17 @@
 ﻿using System;
-using System.IO;
 using TheSailOSProject.FileSystem;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Directories;
 
 public class DeleteDirectoryCommand : ICommand
 {
-    private readonly IDirectoryManager _directoryManager; // Add this
+    private readonly IDirectoryManager _directoryManager;
     private readonly ICurrentDirectoryManager _currentDirectoryManager;
     private readonly IRootDirectoryProvider _rootDirectoryProvider;
 
     public DeleteDirectoryCommand(IDirectoryManager directoryManager, ICurrentDirectoryManager currentDirectoryManager, IRootDirectoryProvider rootDirectoryProvider) // Modify constructor
     {
-        _directoryManager = directoryManager ?? throw new ArgumentNullException(nameof(directoryManager)); // Add this
+        _directoryManager = directoryManager ?? throw new ArgumentNullException(nameof(directoryManager));
         _currentDirectoryManager = currentDirectoryManager ?? throw new ArgumentNullException(nameof(currentDirectoryManager));
         _rootDirectoryProvider = rootDirectoryProvider ?? throw new ArgumentNullException(nameof(rootDirectoryProvider));
     }

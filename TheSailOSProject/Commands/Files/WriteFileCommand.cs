@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.FileSystem;
 
 namespace TheSailOSProject.Commands.Files;

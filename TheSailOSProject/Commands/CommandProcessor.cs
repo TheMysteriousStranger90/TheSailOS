@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Files;
+using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
 using TheSailOSProject.Commands.Power;
@@ -20,7 +22,7 @@ public class CommandProcessor
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory"
+        "httpget", "ping", "memory", "freespace", "fstype"
     };
     
     public CommandProcessor(
@@ -28,7 +30,8 @@ public class CommandProcessor
         IDirectoryManager directoryManager,
         ICommandHistoryManager historyManager,
         ICurrentDirectoryManager currentDirectoryManager,
-        IRootDirectoryProvider rootDirectoryProvider)
+        IRootDirectoryProvider rootDirectoryProvider,
+        IVFSManager vfsManager)
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
@@ -61,6 +64,8 @@ public class CommandProcessor
             { "ping", new PingCommand() },
 
             { "memory", new MemoryCommand() },
+            { "freespace", new FreeSpaceCommand(vfsManager) },
+            { "fstype", new FileSystemTypeCommand(vfsManager) }
 
 
             //{ "httpget", new HttpGetCommand() },
@@ -126,7 +131,9 @@ public class CommandProcessor
             { "dns", "Performs a DNS lookup for the specified domain.\nUsage: dns <domain>" },
             { "httpget", "Retrieves the content of a web page.\nUsage: httpget <url>" },
             { "ping", "Pings the specified IP address.\nUsage: ping <ip_address>" },
-            { "memory", "Displays memory information.\nUsage: memory" }
+            { "memory", "Displays memory information.\nUsage: memory" },
+            { "freespace", "Displays available free space on a drive.\nUsage: freespace <drive>" },
+            { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" } 
         };
     }
 }

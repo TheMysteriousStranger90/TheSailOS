@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Helpers;
 
 public class ClearHistoryCommand : ICommand
 {
