@@ -11,6 +11,7 @@ using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Memory;
 using TheSailOSProject.Network;
+using TheSailOSProject.Styles;
 using Sys = Cosmos.System;
 
 namespace TheSailOSProject
@@ -26,24 +27,27 @@ namespace TheSailOSProject
 
         protected override void BeforeRun()
         {
-            Console.WriteLine("Cosmos booted successfully.");
-
+            ConsoleManager.Initialize();
+            System.Threading.Thread.Sleep(100);
+            
             InitializeMemoryManager();
-            Console.WriteLine("[MemoryManager] Initialized");
+            ConsoleManager.WriteLineColored("[MemoryManager] Initialized", ConsoleStyle.Colors.Success);
 
             InitializeFileSystem();
-            Console.WriteLine("[FileSystem] System initialized");
-
+            ConsoleManager.WriteLineColored("[FileSystem] System initialized", ConsoleStyle.Colors.Success);
+            
             InitializeNetwork();
-            Console.WriteLine("[Network] System initialized");
+            ConsoleManager.WriteLineColored("[Network] System initialized", ConsoleStyle.Colors.Success);
 
             InitializeCommandProcessor();
-            Console.WriteLine("[CommandProcessor] Initialized");
+            ConsoleManager.WriteLineColored("[CommandProcessor] Initialized", ConsoleStyle.Colors.Success);
         }
 
         protected override void Run()
         {
-            Console.Write($"{_currentDirectoryManager.GetCurrentDirectory()}> ");
+            ConsoleManager.WriteColored($"{_currentDirectoryManager.GetCurrentDirectory()}", ConsoleStyle.Colors.Primary);
+            ConsoleManager.WriteColored(ConsoleStyle.Symbols.Prompt + " ", ConsoleStyle.Colors.Primary);
+            
             var input = Console.ReadLine();
             _commandProcessor.ProcessCommand(input);
         }
