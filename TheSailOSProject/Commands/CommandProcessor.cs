@@ -67,7 +67,9 @@ public class CommandProcessor
             { "netstatus", new NetworkStatusCommand() },
             { "memory", new MemoryCommand() },
             { "freespace", new FreeSpaceCommand(vfsManager) },
-            { "fstype", new FileSystemTypeCommand(vfsManager) }
+            { "fstype", new FileSystemTypeCommand(vfsManager) },
+            { "date", new DateCommand() },
+            { "time", new TimeCommand() }
 
 
             //{ "httpget", new HttpGetCommand() },
@@ -138,7 +140,9 @@ public class CommandProcessor
             {"netstatus", "Displays network status.\nUsage: netstatus"},
             { "memory", "Displays memory information.\nUsage: memory" },
             { "freespace", "Displays available free space on a drive.\nUsage: freespace <drive>" },
-            { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" } 
+            { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" },
+            { "date", "Shows the current date.\nUsage: date" },
+            { "time", "Shows the current time.\nUsage: time" }
         };
     }
 }

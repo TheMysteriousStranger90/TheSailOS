@@ -25,7 +25,7 @@ public class PingClient
                 {
                     try
                     {
-                        var startTime = DateTime.Now;
+                        var startTime = System.DateTime.Now.Year;
                         icmpClient.SendEcho();
                         
                         EndPoint endpoint = new EndPoint(Address.Zero, 0);
