@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TheSailOSProject.Commands.Directories;
+using TheSailOSProject.Commands.Disk;
 using TheSailOSProject.Commands.Files;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.Commands.Memory;
@@ -31,7 +32,9 @@ public class CommandProcessor
         ICommandHistoryManager historyManager,
         ICurrentDirectoryManager currentDirectoryManager,
         IRootDirectoryProvider rootDirectoryProvider,
-        IVFSManager vfsManager)
+        IVFSManager vfsManager,
+        IDiskManager diskManager
+        )
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
@@ -69,8 +72,11 @@ public class CommandProcessor
             { "freespace", new FreeSpaceCommand(vfsManager) },
             { "fstype", new FileSystemTypeCommand(vfsManager) },
             { "date", new DateCommand() },
-            { "time", new TimeCommand() }
+            { "time", new TimeCommand() },
 
+            { "format", new FormatDriveCommand(diskManager) },
+            { "partition", new CreatePartitionCommand(diskManager) },
+            { "partinfo", new ListPartitionsCommand(diskManager) },
 
             //{ "httpget", new HttpGetCommand() },
         };
@@ -142,7 +148,10 @@ public class CommandProcessor
             { "freespace", "Displays available free space on a drive.\nUsage: freespace <drive>" },
             { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" },
             { "date", "Shows the current date.\nUsage: date" },
-            { "time", "Shows the current time.\nUsage: time" }
+            { "time", "Shows the current time.\nUsage: time" },
+            { "format", "Formats a drive.\nUsage: format <drive_letter>" },
+            { "partition", "Creates a partition on a drive.\nUsage: partition <drive_letter> <size>" },
+            { "partinfo", "Lists information about partitions on a drive.\nUsage: partinfo <drive_letter>" }
         };
     }
 }

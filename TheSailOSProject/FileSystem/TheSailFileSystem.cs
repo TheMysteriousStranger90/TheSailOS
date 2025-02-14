@@ -5,10 +5,11 @@ using Cosmos.System.FileSystem;
 using Cosmos.System.FileSystem.Listing;
 using Cosmos.System.FileSystem.VFS;
 using TheSailOSProject.Exceptions;
+using TheSailOSProject.Styles;
 
 namespace TheSailOSProject.FileSystem;
 
-public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICacheManager, IVFSManager
+public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICacheManager, IVFSManager, IDiskManager
 {
     private CosmosVFS _vfs;
     private Dictionary<string, byte[]> _fileCache;
@@ -42,7 +43,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
             throw new FileSystemException("Failed to initialize filesystem", ex);
         }
     }
-    
+
     // IFileManager implementation
     public bool CreateFile(string path)
     {
@@ -303,7 +304,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         try
         {
             string newPath = Path.Combine(Path.GetDirectoryName(path), newName);
-            
+
             Directory.CreateDirectory(newPath);
             CopyDirectory(path, newPath);
             DeleteDirectory(path);
@@ -419,12 +420,112 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
     {
         return path.StartsWith(SystemDirectory, StringComparison.OrdinalIgnoreCase);
     }
-    
+
     private void EnsureNotSystemPath(string path)
     {
         if (IsSystemPath(path))
         {
             throw new UnauthorizedAccessException("Operation not allowed in system directory.");
+        }
+    }
+    
+    // IDiskManager implementation
+    public void FormatDrive(string name)
+    {
+        try
+        {
+            bool driveExists = false;
+            foreach (var disk in _vfs.GetDisks())
+            {
+                int index = 0;
+                foreach (var partition in disk.Partitions)
+                {
+                    if (partition.RootPath == name)
+                    {
+                        driveExists = true;
+                        ConsoleManager.WriteLineColored($"Formatting partition {index} of disk {name}...",
+                            ConsoleStyle.Colors.Warning);
+                        disk.FormatPartition(0, "FAT32", true);
+                        ConsoleManager.WriteLineColored("Format completed successfully.", ConsoleStyle.Colors.Success);
+                        break;
+                    }
+
+                    index++;
+                }
+            }
+
+            if (!driveExists)
+            {
+                ConsoleManager.WriteLineColored($"The drive \"{name}\" doesn't exist!", ConsoleStyle.Colors.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"Error formatting drive: {ex.Message}", ConsoleStyle.Colors.Error);
+        }
+    }
+
+    public void CreatePartition(string diskLetter, int partitionSize)
+    {
+        try
+        {
+            foreach (var disk in _vfs.GetDisks())
+            {
+                foreach (var partition in disk.Partitions)
+                {
+                    if (partition.RootPath == diskLetter)
+                    {
+                        ConsoleManager.WriteLineColored(
+                            $"Creating new partition on disk {diskLetter} with size {partitionSize}...",
+                            ConsoleStyle.Colors.Primary);
+                        disk.CreatePartition(partitionSize);
+                        disk.FormatPartition(disk.Partitions.Count - 1, "FAT32", true);
+                        disk.MountPartition(disk.Partitions.Count - 1);
+                        ConsoleManager.WriteLineColored("Partition created successfully.", ConsoleStyle.Colors.Success);
+                        return;
+                    }
+                }
+            }
+
+            ConsoleManager.WriteLineColored($"Disk {diskLetter} not found.", ConsoleStyle.Colors.Error);
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"Error creating partition: {ex.Message}", ConsoleStyle.Colors.Error);
+        }
+    }
+
+    public void ListPartitions(string driveLetter)
+    {
+        try
+        {
+            bool found = false;
+            foreach (var disk in _vfs.GetDisks())
+            {
+                foreach (var partition in disk.Partitions)
+                {
+                    if (partition.RootPath == driveLetter)
+                    {
+                        found = true;
+                        ConsoleManager.WriteLineColored("Partition Information:", ConsoleStyle.Colors.Primary);
+                        ConsoleManager.WriteLineColored($"Root Path: {partition.RootPath}", ConsoleStyle.Colors.Accent);
+                        ConsoleManager.WriteLineColored($"Has FileSystem: {partition.HasFileSystem}",
+                            ConsoleStyle.Colors.Accent);
+                        ConsoleManager.WriteLineColored($"Label: {partition.MountedFS.Label}",
+                            ConsoleStyle.Colors.Accent);
+                    }
+                }
+            }
+
+            if (!found)
+            {
+                ConsoleManager.WriteLineColored($"No partitions found for drive {driveLetter}",
+                    ConsoleStyle.Colors.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"Error listing partitions: {ex.Message}", ConsoleStyle.Colors.Error);
         }
     }
 }

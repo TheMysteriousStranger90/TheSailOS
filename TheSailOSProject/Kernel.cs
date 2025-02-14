@@ -81,6 +81,7 @@ namespace TheSailOSProject
                 _historyManager,
                 _currentDirectoryManager,
                 _rootDirectoryProvider,
+                _fileSystem,
                 _fileSystem
             );
         }
