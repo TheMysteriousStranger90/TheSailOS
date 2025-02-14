@@ -77,6 +77,7 @@ public class CommandProcessor
             { "format", new FormatDriveCommand(diskManager) },
             { "partition", new CreatePartitionCommand(diskManager) },
             { "partinfo", new ListPartitionsCommand(diskManager) },
+            { "partman", new PartitionManagerCommand(diskManager) },
 
             //{ "httpget", new HttpGetCommand() },
         };
@@ -151,7 +152,8 @@ public class CommandProcessor
             { "time", "Shows the current time.\nUsage: time" },
             { "format", "Formats a drive.\nUsage: format <drive_letter>" },
             { "partition", "Creates a partition on a drive.\nUsage: partition <drive_letter> <size>" },
-            { "partinfo", "Lists information about partitions on a drive.\nUsage: partinfo <drive_letter>" }
+            { "partinfo", "Lists information about partitions on a drive.\nUsage: partinfo <drive_letter>" },
+            { "partman", "Opens the partition manager.\nUsage: partman" }
         };
     }
 }

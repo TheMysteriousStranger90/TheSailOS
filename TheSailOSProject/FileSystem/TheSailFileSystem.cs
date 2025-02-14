@@ -428,7 +428,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
             throw new UnauthorizedAccessException("Operation not allowed in system directory.");
         }
     }
-    
+
     // IDiskManager implementation
     public void FormatDrive(string name)
     {
@@ -526,6 +526,124 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         catch (Exception ex)
         {
             ConsoleManager.WriteLineColored($"Error listing partitions: {ex.Message}", ConsoleStyle.Colors.Error);
+        }
+    }
+    
+    public void MountPartition(string partition)
+    {
+        try
+        {
+            foreach (var disk in _vfs.GetDisks())
+            {
+                int partitionIndex = 0;
+                foreach (var part in disk.Partitions)
+                {
+                    if (part.RootPath == partition)
+                    {
+                        try
+                        {
+                            disk.MountPartition(partitionIndex);
+                            ConsoleManager.WriteLineColored($"Partition {partition} mounted successfully.",
+                                ConsoleStyle.Colors.Success);
+                            return;
+                        }
+                        catch
+                        {
+                            throw new Exception("Failed to mount partition. It might be already mounted.");
+                        }
+                    }
+
+                    partitionIndex++;
+                }
+            }
+
+            throw new Exception($"Partition {partition} not found.");
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"Error mounting partition: {ex.Message}",
+                ConsoleStyle.Colors.Error);
+            throw new FileSystemException($"Failed to mount partition: {partition}", ex);
+        }
+    }
+
+    public void UnmountPartition(string partition)
+    {
+        try
+        {
+            foreach (var disk in _vfs.GetDisks())
+            {
+                int partitionIndex = 0;
+                foreach (var part in disk.Partitions)
+                {
+                    if (part.RootPath == partition)
+                    {
+                        if (part.MountedFS != null)
+                        {
+                            try
+                            {
+                                disk.MountPartition(partitionIndex);
+                                ConsoleManager.WriteLineColored($"Partition {partition} unmounted successfully.",
+                                    ConsoleStyle.Colors.Success);
+                                return;
+                            }
+                            catch
+                            {
+                                throw new Exception("Failed to unmount partition.");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Partition is not mounted.");
+                        }
+                    }
+
+                    partitionIndex++;
+                }
+            }
+
+            throw new Exception($"Partition {partition} not found.");
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"Error unmounting partition: {ex.Message}",
+                ConsoleStyle.Colors.Error);
+            throw new FileSystemException($"Failed to unmount partition: {partition}", ex);
+        }
+    }
+
+    public void SetPartitionLabel(string partition, string label)
+    {
+        try
+        {
+            foreach (var disk in _vfs.GetDisks())
+            {
+                foreach (var part in disk.Partitions)
+                {
+                    if (part.RootPath == partition)
+                    {
+                        if (part.HasFileSystem && part.MountedFS != null)
+                        {
+                            part.MountedFS.Label = label;
+                            ConsoleManager.WriteLineColored($"Label for partition {partition} set to: {label}",
+                                ConsoleStyle.Colors.Success);
+                            return;
+                        }
+                        else
+                        {
+                            throw new Exception("Partition has no file system or is not mounted.");
+                        }
+                    }
+                }
+            }
+
+            throw new Exception($"Partition {partition} not found.");
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"Error setting partition label: {ex.Message}",
+                ConsoleStyle.Colors.Error);
+            throw new FileSystemException($"Failed to set partition label: {partition}", ex);
         }
     }
 }
