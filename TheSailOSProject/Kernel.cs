@@ -5,6 +5,7 @@ using Cosmos.HAL;
 using Cosmos.System.Network.Config;
 using Cosmos.System.Network.IPv4;
 using Cosmos.System.Network.IPv4.UDP.DHCP;
+using TheSailOSProject.Audio;
 using TheSailOSProject.Commands;
 using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Helpers;
@@ -20,18 +21,23 @@ namespace TheSailOSProject
     {
         private TheSailFileSystem _fileSystem;
         private CommandProcessor _commandProcessor;
-        private CommandHistoryManager _historyManager;
-        private AliasManager _aliasManager;
-        private CurrentDirectoryManager _currentDirectoryManager;
-        private RootDirectoryProvider _rootDirectoryProvider;
-
+        
+        private ICommandHistoryManager _historyManager;
+        private IAliasManager _aliasManager;
+        private ICurrentDirectoryManager _currentDirectoryManager;
+        private IRootDirectoryProvider _rootDirectoryProvider;
+        private IAudioManager _audioManager;
+        
         protected override void BeforeRun()
         {
             ConsoleManager.Initialize();
             System.Threading.Thread.Sleep(100);
             
+            InitializeAudio();
+            ConsoleManager.WriteLineColored("[Audio] System initialized", ConsoleStyle.Colors.Success);
+            
             InitializeMemoryManager();
-            ConsoleManager.WriteLineColored("[MemoryManager] Initialized", ConsoleStyle.Colors.Success);
+            ConsoleManager.WriteLineColored("[MemoryManager] System initialized", ConsoleStyle.Colors.Success);
 
             InitializeFileSystem();
             ConsoleManager.WriteLineColored("[FileSystem] System initialized", ConsoleStyle.Colors.Success);
@@ -40,7 +46,7 @@ namespace TheSailOSProject
             ConsoleManager.WriteLineColored("[Network] System initialized", ConsoleStyle.Colors.Success);
 
             InitializeCommandProcessor();
-            ConsoleManager.WriteLineColored("[CommandProcessor] Initialized", ConsoleStyle.Colors.Success);
+            ConsoleManager.WriteLineColored("[CommandProcessor] System initialized", ConsoleStyle.Colors.Success);
         }
 
         protected override void Run()
@@ -82,7 +88,8 @@ namespace TheSailOSProject
                 _currentDirectoryManager,
                 _rootDirectoryProvider,
                 _fileSystem,
-                _fileSystem
+                _fileSystem,
+                _audioManager
             );
         }
 
@@ -91,6 +98,34 @@ namespace TheSailOSProject
             Console.WriteLine("Initializing network...");
             
             NetworkManager.Initialize();
+        }
+        
+        private void InitializeAudio()
+        {
+            try
+            {
+                Console.WriteLine("Initializing Audio System...");
+        
+                _audioManager = new AudioManager();
+                _audioManager.Initialize();
+
+                if (_audioManager.IsAudioEnabled)
+                {
+                    ConsoleManager.WriteLineColored("[Audio] System initialized successfully", 
+                        ConsoleStyle.Colors.Success);
+                }
+                else
+                {
+                    ConsoleManager.WriteLineColored("[Audio] System initialized in fallback mode (no audio)", 
+                        ConsoleStyle.Colors.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                ConsoleManager.WriteLineColored($"[Audio] Initialization failed: {ex.Message}", 
+                    ConsoleStyle.Colors.Error);
+                _audioManager = null;
+            }
         }
     }
 }

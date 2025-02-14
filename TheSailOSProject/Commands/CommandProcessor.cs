@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TheSailOSProject.Audio;
+using TheSailOSProject.Commands.Audio;
 using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Disk;
 using TheSailOSProject.Commands.Files;
@@ -33,7 +35,8 @@ public class CommandProcessor
         ICurrentDirectoryManager currentDirectoryManager,
         IRootDirectoryProvider rootDirectoryProvider,
         IVFSManager vfsManager,
-        IDiskManager diskManager
+        IDiskManager diskManager,
+        IAudioManager audioManager
         )
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
@@ -78,7 +81,9 @@ public class CommandProcessor
             { "partition", new CreatePartitionCommand(diskManager) },
             { "partinfo", new ListPartitionsCommand(diskManager) },
             { "partman", new PartitionManagerCommand(diskManager) },
-
+            
+            {"playaudio", new PlayAudioCommand(audioManager, currentDirectoryManager)},
+            {"stopaudio", new StopAudioCommand(audioManager, currentDirectoryManager)}
             //{ "httpget", new HttpGetCommand() },
         };
     }
