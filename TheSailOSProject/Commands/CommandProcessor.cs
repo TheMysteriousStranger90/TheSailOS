@@ -6,6 +6,7 @@ using TheSailOSProject.Commands.Audio;
 using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Disk;
 using TheSailOSProject.Commands.Files;
+using TheSailOSProject.Commands.Games;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
@@ -74,6 +75,7 @@ public class CommandProcessor
             { "memory", new MemoryCommand() },
             { "freespace", new FreeSpaceCommand(vfsManager) },
             { "fstype", new FileSystemTypeCommand(vfsManager) },
+            
             { "date", new DateCommand() },
             { "time", new TimeCommand() },
 
@@ -83,7 +85,12 @@ public class CommandProcessor
             { "partman", new PartitionManagerCommand(diskManager) },
             
             {"playaudio", new PlayAudioCommand(audioManager, currentDirectoryManager)},
-            {"stopaudio", new StopAudioCommand(audioManager, currentDirectoryManager)}
+            {"stopaudio", new StopAudioCommand(audioManager, currentDirectoryManager)},
+            
+            {"snake", new SnakeGameCommand()},
+            {"tetris", new TetrisGameCommand()},
+            {"tictactoe", new TicTacToeGameCommand()}
+            
             //{ "httpget", new HttpGetCommand() },
         };
     }
@@ -158,7 +165,12 @@ public class CommandProcessor
             { "format", "Formats a drive.\nUsage: format <drive_letter>" },
             { "partition", "Creates a partition on a drive.\nUsage: partition <drive_letter> <size>" },
             { "partinfo", "Lists information about partitions on a drive.\nUsage: partinfo <drive_letter>" },
-            { "partman", "Opens the partition manager.\nUsage: partman" }
+            { "partman", "Opens the partition manager.\nUsage: partman" },
+            { "playaudio", "Plays an audio file.\nUsage: playaudio <path>" },
+            { "stopaudio", "Stops the currently playing audio.\nUsage: stopaudio" },
+            { "snake", "Play Snake game.\nUse arrow keys to move, ESC to exit." },
+            { "tetris", "Play Tetris game.\nUse arrow keys to move, ESC to exit." },
+            { "tictactoe", "Play Tic-Tac-Toe against the computer.\nUse numpad (1-9) to place X." }
         };
     }
 }
