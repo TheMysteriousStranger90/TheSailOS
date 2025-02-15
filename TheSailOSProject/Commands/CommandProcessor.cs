@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TheSailOSProject.Audio;
 using TheSailOSProject.Commands.Audio;
+using TheSailOSProject.Commands.CPU;
 using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Disk;
 using TheSailOSProject.Commands.Files;
@@ -72,7 +73,10 @@ public class CommandProcessor
             { "netshutdown", new NetworkShutdownCommand() },
             { "netconfig", new NetworkConfigureCommand() },
             { "netstatus", new NetworkStatusCommand() },
+            
             { "memory", new MemoryCommand() },
+            { "cpu", new CPUCommand() },
+            
             { "freespace", new FreeSpaceCommand(vfsManager) },
             { "fstype", new FileSystemTypeCommand(vfsManager) },
             
@@ -158,6 +162,7 @@ public class CommandProcessor
             {"netconfig", "Configures the network.\nUsage: netconfig"},
             {"netstatus", "Displays network status.\nUsage: netstatus"},
             { "memory", "Displays memory information.\nUsage: memory" },
+            { "cpu", "Display CPU information." },
             { "freespace", "Displays available free space on a drive.\nUsage: freespace <drive>" },
             { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" },
             { "date", "Shows the current date.\nUsage: date" },

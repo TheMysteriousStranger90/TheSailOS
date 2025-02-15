@@ -1,4 +1,4 @@
-﻿using TheSailOSProject.Memory;
+﻿using TheSailOSProject.Hardware.Memory;
 
 namespace TheSailOSProject.Commands.Memory;
 

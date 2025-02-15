@@ -10,7 +10,7 @@ using TheSailOSProject.Commands;
 using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
-using TheSailOSProject.Memory;
+using TheSailOSProject.Hardware.Memory;
 using TheSailOSProject.Network;
 using TheSailOSProject.Styles;
 using Sys = Cosmos.System;

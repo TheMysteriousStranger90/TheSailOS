@@ -1,7 +1,7 @@
 ﻿using System;
 using Cosmos.Core;
 
-namespace TheSailOSProject.Memory;
+namespace TheSailOSProject.Hardware.Memory;
 
 public static class MemoryManager
 {
@@ -9,7 +9,7 @@ public static class MemoryManager
 
     public static void Initialize()
     {
-        _totalMemoryMB = CPU.GetAmountOfRAM();
+        _totalMemoryMB = Cosmos.Core.CPU.GetAmountOfRAM();
 
         if (_totalMemoryMB < 64)
         {
@@ -25,7 +25,7 @@ public static class MemoryManager
     {
         uint memTotal = _totalMemoryMB;
         uint memUnavail = memTotal - (uint)GCImplementation.GetAvailableRAM();
-        uint kernelMB = (CPU.GetEndOfKernel() / 1024 / 1024) + 1;
+        uint kernelMB = (Cosmos.Core.CPU.GetEndOfKernel() / 1024 / 1024) + 1;
         uint memUsed = ((uint)GCImplementation.GetUsedRAM() / 1024 / 1024) + memUnavail + kernelMB;
         uint memFree = memTotal - memUsed;
         uint memPercentUsed = (uint)(((float)memUsed / (float)memTotal) * 100f);

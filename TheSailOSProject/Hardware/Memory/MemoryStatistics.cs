@@ -1,4 +1,4 @@
-﻿namespace TheSailOSProject.Memory;
+﻿namespace TheSailOSProject.Hardware.Memory;
 
 public struct MemoryStatistics
 {
