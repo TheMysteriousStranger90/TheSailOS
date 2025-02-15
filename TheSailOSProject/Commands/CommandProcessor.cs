@@ -12,6 +12,7 @@ using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
 using TheSailOSProject.Commands.Power;
+using TheSailOSProject.Commands.Processes;
 using TheSailOSProject.FileSystem;
 
 namespace TheSailOSProject.Commands;
@@ -29,7 +30,7 @@ public class CommandProcessor
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
         "httpget", "ping", "memory", "freespace", "fstype"
     };
-    
+
     public CommandProcessor(
         IFileManager fileManager,
         IDirectoryManager directoryManager,
@@ -39,7 +40,7 @@ public class CommandProcessor
         IVFSManager vfsManager,
         IDiskManager diskManager,
         IAudioManager audioManager
-        )
+    )
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
@@ -73,13 +74,14 @@ public class CommandProcessor
             { "netshutdown", new NetworkShutdownCommand() },
             { "netconfig", new NetworkConfigureCommand() },
             { "netstatus", new NetworkStatusCommand() },
-            
+
             { "memory", new MemoryCommand() },
             { "cpu", new CPUCommand() },
-            
+            { "processinfo", new ProcessInfoCommand() },
+
             { "freespace", new FreeSpaceCommand(vfsManager) },
             { "fstype", new FileSystemTypeCommand(vfsManager) },
-            
+
             { "date", new DateCommand() },
             { "time", new TimeCommand() },
 
@@ -87,14 +89,14 @@ public class CommandProcessor
             { "partition", new CreatePartitionCommand(diskManager) },
             { "partinfo", new ListPartitionsCommand(diskManager) },
             { "partman", new PartitionManagerCommand(diskManager) },
-            
-            {"playaudio", new PlayAudioCommand(audioManager, currentDirectoryManager)},
-            {"stopaudio", new StopAudioCommand(audioManager, currentDirectoryManager)},
-            
-            {"snake", new SnakeGameCommand()},
-            {"tetris", new TetrisGameCommand()},
-            {"tictactoe", new TicTacToeGameCommand()}
-            
+
+            { "playaudio", new PlayAudioCommand(audioManager, currentDirectoryManager) },
+            { "stopaudio", new StopAudioCommand(audioManager, currentDirectoryManager) },
+
+            { "snake", new SnakeGameCommand() },
+            { "tetris", new TetrisGameCommand() },
+            { "tictactoe", new TicTacToeGameCommand() }
+
             //{ "httpget", new HttpGetCommand() },
         };
     }
@@ -111,12 +113,13 @@ public class CommandProcessor
 
         var commandName = parts[0].ToLower();
         var args = parts.Skip(1).ToArray();
-        
+
         if (string.IsNullOrEmpty(commandName))
         {
             Console.WriteLine("Error: Command cannot be empty.");
             return;
         }
+
         commandName = _aliasManager.GetCommand(commandName);
 
         if (_commands.ContainsKey(commandName))
@@ -133,6 +136,8 @@ public class CommandProcessor
     {
         return new Dictionary<string, string>
         {
+            // File System Commands
+            { "FILE SYSTEM COMMANDS", "The following commands are used to manage files and directories:" },
             { "ls", "Lists files and directories in the current directory or specified path.\nUsage: ls [path]" },
             { "dir", "Lists files and directories in the current directory or specified path.\nUsage: dir [path]" },
             { "cd", "Changes the current directory.\nUsage: cd <path>" },
@@ -148,31 +153,56 @@ public class CommandProcessor
             { "copy", "Copies a file from source to destination.\nUsage: copy <source> <destination>" },
             { "move", "Moves a file from source to destination.\nUsage: move <source> <destination>" },
             { "rename", "Renames a file.\nUsage: rename <oldPath> <newName>" },
+
+            // History Commands
+            { "HISTORY COMMANDS", "The following commands are used to manage command history:" },
             { "history", "Displays the command history.\nUsage: history" },
             { "clear", "Clears the command history.\nUsage: clear" },
+
+            // System Commands
+            { "SYSTEM COMMANDS", "The following commands are used to manage the system:" },
             { "help", "Displays help information for a command or lists available commands.\nUsage: help [command]" },
             { "alias", "Creates an alias for a command.\nUsage: alias <new_alias> <command>" },
             { "pwd", "Prints the current working directory.\nUsage: pwd" },
             { "reboot", "Reboots the system.\nUsage: reboot" },
             { "shutdown", "Shuts down the system.\nUsage: shutdown" },
+            { "date", "Shows the current date.\nUsage: date" },
+            { "time", "Shows the current time.\nUsage: time" },
+
+            // Network Commands
+            { "NETWORK COMMANDS", "The following commands are used to manage the network:" },
             { "dns", "Performs a DNS lookup for the specified domain.\nUsage: dns <domain>" },
             { "httpget", "Retrieves the content of a web page.\nUsage: httpget <url>" },
             { "ping", "Pings the specified IP address.\nUsage: ping <ip_address>" },
-            {"netshutdown", "Shuts down the network.\nUsage: netshutdown"},
-            {"netconfig", "Configures the network.\nUsage: netconfig"},
-            {"netstatus", "Displays network status.\nUsage: netstatus"},
+            { "netshutdown", "Shuts down the network.\nUsage: netshutdown" },
+            { "netconfig", "Configures the network.\nUsage: netconfig" },
+            { "netstatus", "Displays network status.\nUsage: netstatus" },
+
+            // Hardware Commands
+            { "HARDWARE COMMANDS", "The following commands are used to display hardware information:" },
             { "memory", "Displays memory information.\nUsage: memory" },
             { "cpu", "Display CPU information." },
+
+            // Process Commands
+            { "PROCESS COMMANDS", "The following commands are used to manage processes:" },
+            { "processinfo", "Display process information.\nUsage: processinfo [id <ID> | name <Name>]" },
+
+            // Disk Commands
+            { "DISK COMMANDS", "The following commands are used to manage disks and partitions:" },
             { "freespace", "Displays available free space on a drive.\nUsage: freespace <drive>" },
             { "fstype", "Displays the file system type of a drive.\nUsage: fstype <drive>" },
-            { "date", "Shows the current date.\nUsage: date" },
-            { "time", "Shows the current time.\nUsage: time" },
             { "format", "Formats a drive.\nUsage: format <drive_letter>" },
             { "partition", "Creates a partition on a drive.\nUsage: partition <drive_letter> <size>" },
             { "partinfo", "Lists information about partitions on a drive.\nUsage: partinfo <drive_letter>" },
             { "partman", "Opens the partition manager.\nUsage: partman" },
+
+            // Audio Commands
+            { "AUDIO COMMANDS", "The following commands are used to manage audio:" },
             { "playaudio", "Plays an audio file.\nUsage: playaudio <path>" },
             { "stopaudio", "Stops the currently playing audio.\nUsage: stopaudio" },
+
+            // Game Commands
+            { "GAME COMMANDS", "The following commands are used to play games:" },
             { "snake", "Play Snake game.\nUse arrow keys to move, ESC to exit." },
             { "tetris", "Play Tetris game.\nUse arrow keys to move, ESC to exit." },
             { "tictactoe", "Play Tic-Tac-Toe against the computer.\nUse numpad (1-9) to place X." }
