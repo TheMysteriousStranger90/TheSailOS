@@ -12,6 +12,7 @@ using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Hardware.Memory;
 using TheSailOSProject.Network;
+using TheSailOSProject.Processes;
 using TheSailOSProject.Styles;
 using Sys = Cosmos.System;
 
@@ -32,6 +33,9 @@ namespace TheSailOSProject
         {
             ConsoleManager.Initialize();
             System.Threading.Thread.Sleep(100);
+            
+            InitializeProcessManager();
+            ConsoleManager.WriteLineColored("[ProcessManager] System initialized", ConsoleStyle.Colors.Success);
             
             InitializeAudio();
             ConsoleManager.WriteLineColored("[Audio] System initialized", ConsoleStyle.Colors.Success);
@@ -126,6 +130,19 @@ namespace TheSailOSProject
                     ConsoleStyle.Colors.Error);
                 _audioManager = null;
             }
+        }
+        
+        private void InitializeProcessManager()
+        {
+            Console.WriteLine("Initializing Process Manager...");
+            
+            ProcessManager.Initialize();
+            
+            // Create memory management service
+            var memoryService = new MemoryManagementService();
+            ProcessManager.Register(memoryService);
+            ProcessManager.Start(memoryService);
+            ProcessManager.Update();
         }
     }
 }

@@ -3,14 +3,15 @@ using TheSailOSProject.Styles;
 
 namespace TheSailOSProject.Processes;
 
-public class ProcessManager
+public static class ProcessManager
 {
-    private static List<Process> _processes = new List<Process>();
+    private static List<Process> _processes;
     private static ulong _nextProcessId = 0;
 
     public static void Initialize()
     {
         ConsoleManager.WriteLineColored("[ProcessManager] Initialized", ConsoleStyle.Colors.Success);
+        _processes = new List<Process>();
     }
 
     public static Process Register(Process process)
