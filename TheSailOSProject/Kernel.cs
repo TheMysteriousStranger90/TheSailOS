@@ -61,6 +61,11 @@ namespace TheSailOSProject
             var input = Console.ReadLine();
             _commandProcessor.ProcessCommand(input);
         }
+        
+        protected override void OnBoot() 
+        {
+            Sys.Global.Init(GetTextScreen(),true,true,true,true);
+        }
 
         private void InitializeFileSystem()
         {

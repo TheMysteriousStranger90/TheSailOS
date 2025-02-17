@@ -6,6 +6,7 @@
         <Platform>cosmos</Platform>
         <SupportsX86Intrinsics>false</SupportsX86Intrinsics>
         <SelfContained>True</SelfContained>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -17,12 +18,21 @@
         <Profile>VMware</Profile>
         <Description>Use VMware Player or Workstation to deploy and debug.</Description>
         <PxeInterface>192.168.0.8</PxeInterface>
-
-
+        
         <VBEResolution>1024x768x32</VBEResolution>
-
-        <VMWareAudioDriver>AC97</VMWareAudioDriver>
-        <VMWareAudioEnabled>True</VMWareAudioEnabled>
+        <BinFormat>Elf</BinFormat>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <CompressionType>Gzip</CompressionType>
+        <RemoveBootDebugOutput>True</RemoveBootDebugOutput>
+        <StackCorruptionDetectionEnabled>True</StackCorruptionDetectionEnabled>
+        <UseCompilerOptimizations>True</UseCompilerOptimizations>
+        <OptimizationLevel>2</OptimizationLevel>
+        <TraceMode>All</TraceMode>
+        <IgnoreDebugStubAttribute>False</IgnoreDebugStubAttribute>
+        <Timeout>5</Timeout>
+        <ExtractMapFile>True</ExtractMapFile>
+        <DefineConstants>THESAILOS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
