@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Cosmos.HAL;
-using Cosmos.System.Network.Config;
-using Cosmos.System.Network.IPv4;
-using Cosmos.System.Network.IPv4.UDP.DHCP;
 using TheSailOSProject.Audio;
 using TheSailOSProject.Commands;
 using TheSailOSProject.Commands.Directories;
