@@ -13,22 +13,24 @@ using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
 using TheSailOSProject.Commands.Power;
 using TheSailOSProject.Commands.Processes;
+using TheSailOSProject.Commands.Users;
 using TheSailOSProject.FileSystem;
+using TheSailOSProject.Users;
 
 namespace TheSailOSProject.Commands;
 
 public class CommandProcessor
-
 {
     private readonly Dictionary<string, ICommand> _commands;
     private readonly ICommandHistoryManager _historyManager;
     private readonly IAliasManager _aliasManager;
+    private readonly ILoginHandler _loginHandler;
 
     private List<string> _availableCommands = new List<string>
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype"
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login"
     };
 
     public CommandProcessor(
@@ -39,11 +41,13 @@ public class CommandProcessor
         IRootDirectoryProvider rootDirectoryProvider,
         IVFSManager vfsManager,
         IDiskManager diskManager,
-        IAudioManager audioManager
+        IAudioManager audioManager,
+        ILoginHandler loginHandler
     )
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
+        _loginHandler = loginHandler ?? throw new ArgumentNullException(nameof(loginHandler));
         _commands = new Dictionary<string, ICommand>
         {
             { "ls", new ListFilesCommand(fileManager, directoryManager, currentDirectoryManager) },
@@ -95,9 +99,8 @@ public class CommandProcessor
 
             { "snake", new SnakeGameCommand() },
             { "tetris", new TetrisGameCommand() },
-            { "tictactoe", new TicTacToeGameCommand() }
-
-            //{ "httpget", new HttpGetCommand() },
+            { "tictactoe", new TicTacToeGameCommand() },
+            { "login", new LoginCommand(_loginHandler) }
         };
     }
 
@@ -168,6 +171,8 @@ public class CommandProcessor
             { "shutdown", "Shuts down the system.\nUsage: shutdown" },
             { "date", "Shows the current date.\nUsage: date" },
             { "time", "Shows the current time.\nUsage: time" },
+            { "log", "Logs a message to the system log.\nUsage: log <message>" },
+            { "login", "Logs in a user.\nUsage: login <username> <password>" },
 
             // Network Commands
             { "NETWORK COMMANDS", "The following commands are used to manage the network:" },

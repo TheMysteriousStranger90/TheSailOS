@@ -6,12 +6,12 @@ public class User
 {
     public string Username { get; set; }
     public string PasswordHash { get; set; }
-    public UserType Type { get; set; }
+    public string Type { get; set; }
 
-    public User(string username, string password, UserType type)
+    public User(string username, string password, string type)
     {
         Username = username;
-        PasswordHash = SHA256.Hash(password);
+        PasswordHash = password;
         Type = type;
     }
 

@@ -1,7 +1,8 @@
-﻿namespace TheSailOSProject.Users;
-
-public enum UserType
+﻿namespace TheSailOSProject.Users
 {
-    Administrator,
-    Standard
+    public static class UserType
+    {
+        public const string Administrator = "Administrator";
+        public const string Standard = "Standard";
+    }
 }
