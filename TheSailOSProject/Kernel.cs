@@ -64,6 +64,11 @@ namespace TheSailOSProject
             }
         }
 
+        protected override void OnBoot()
+        {
+            Sys.Global.Init(GetTextScreen(), true, true, true, true);
+        }
+
         private void PromptLogin()
         {
             ConsoleManager.WriteLineColored("Please log in to continue.", ConsoleStyle.Colors.Warning);
@@ -89,22 +94,33 @@ namespace TheSailOSProject
 
         private void ShowCommandPrompt()
         {
-            ConsoleManager.WriteColored($"{_currentDirectoryManager.GetCurrentDirectory()}", ConsoleStyle.Colors.Primary);
+            ConsoleManager.WriteColored($"{_currentDirectoryManager.GetCurrentDirectory()}",
+                ConsoleStyle.Colors.Primary);
             ConsoleManager.WriteColored(ConsoleStyle.Symbols.Prompt + " ", ConsoleStyle.Colors.Primary);
 
             var input = Console.ReadLine();
-            
+
             if (!string.IsNullOrEmpty(input))
             {
-                _commandProcessor.ProcessCommand(input);
+                ProcessCommand(input);
             }
 
             ShowCommandPrompt();
         }
 
-        protected override void OnBoot()
+        private void ProcessCommand(string input)
         {
-            Sys.Global.Init(GetTextScreen(), true, true, true, true);
+            string[] parts = input.Split(' ');
+            string commandName = parts[0].ToLower();
+
+            if ((commandName == "createuser" || commandName == "deleteuser" || commandName == "listusers") &&
+                (_loggedInUser == null || _loggedInUser.Type != UserType.Administrator))
+            {
+                ConsoleManager.WriteLineColored("Insufficient permissions.", ConsoleStyle.Colors.Error);
+                return;
+            }
+
+            _commandProcessor.ProcessCommand(input);
         }
 
         private void InitializeFileSystem()

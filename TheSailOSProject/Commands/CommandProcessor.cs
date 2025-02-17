@@ -30,7 +30,7 @@ public class CommandProcessor
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype", "log", "login"
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers"
     };
 
     public CommandProcessor(
@@ -100,7 +100,11 @@ public class CommandProcessor
             { "snake", new SnakeGameCommand() },
             { "tetris", new TetrisGameCommand() },
             { "tictactoe", new TicTacToeGameCommand() },
-            { "login", new LoginCommand(_loginHandler) }
+
+            { "login", new LoginCommand(_loginHandler) },
+            { "createuser", new CreateUserCommand() },
+            { "deleteuser", new DeleteUserCommand() },
+            { "listusers", new ListUsersCommand() }
         };
     }
 
@@ -173,6 +177,9 @@ public class CommandProcessor
             { "time", "Shows the current time.\nUsage: time" },
             { "log", "Logs a message to the system log.\nUsage: log <message>" },
             { "login", "Logs in a user.\nUsage: login <username> <password>" },
+            { "createuser", "Creates a new user.\nUsage: createuser <username> <password>" },
+            { "deleteuser", "Deletes a user.\nUsage: deleteuser <username>" },
+            { "listusers", "Lists all users.\nUsage: listusers" },
 
             // Network Commands
             { "NETWORK COMMANDS", "The following commands are used to manage the network:" },

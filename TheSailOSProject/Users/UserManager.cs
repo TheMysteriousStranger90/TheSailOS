@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using TheSailOSProject.Security;
 using TheSailOSProject.Styles;
 
 namespace TheSailOSProject.Users
@@ -8,7 +10,7 @@ namespace TheSailOSProject.Users
     public static class UserManager
     {
         private const string UsersDirectory = @"0:\System\Users";
-        private const string UsersFile = @"0:\System\Users\users.dat";
+        private const string UsersFile = @"0:\System\Users\usersthesail.dat";
         private static List<User> _users = new List<User>();
 
         public static void Initialize()
@@ -28,7 +30,8 @@ namespace TheSailOSProject.Users
 
         private static void CreateDefaultAdminUser()
         {
-            User admin = new User("admin", "admin", UserType.Administrator);
+            string adminPasswordHash = SHA256.Hash("admin");
+            User admin = new User("admin", adminPasswordHash, UserType.Administrator);
             _users.Add(admin);
             SaveUsers();
         }
@@ -41,10 +44,10 @@ namespace TheSailOSProject.Users
                 return false;
             }
 
-            User newUser = new User(username, password, type);
+            string passwordHash = SHA256.Hash(password);
+            User newUser = new User(username, passwordHash, type);
             _users.Add(newUser);
             SaveUsers();
-            ConsoleManager.WriteLineColored($"User {username} created successfully.", ConsoleStyle.Colors.Success);
             return true;
         }
 
@@ -72,6 +75,25 @@ namespace TheSailOSProject.Users
 
             loggedInUser = null;
             return false;
+        }
+
+        public static bool DeleteUser(string username)
+        {
+            User userToDelete = GetUser(username);
+            if (userToDelete == null)
+            {
+                ConsoleManager.WriteLineColored($"User {username} not found.", ConsoleStyle.Colors.Error);
+                return false;
+            }
+
+            _users.Remove(userToDelete);
+            SaveUsers();
+            return true;
+        }
+
+        public static List<User> GetAllUsers()
+        {
+            return _users.ToList();
         }
 
         private static void LoadUsers()
