@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace TheSailOSProject.Commands;
+namespace TheSailOSProject.Commands.Helpers;
 
 public class AliasCommand : ICommand
 {
@@ -14,6 +13,18 @@ public class AliasCommand : ICommand
 
     public void Execute(string[] args)
     {
+        if (args.Length == 0)
+        {
+            Console.WriteLine("Usage: alias <new_alias> <command>");
+            return;
+        }
+        
+        if (args.Length == 1 && args[0].ToLower() == "-l")
+        {
+            ShowAllAliases();
+            return;
+        }
+
         if (args.Length != 2)
         {
             Console.WriteLine("Usage: alias <new_alias> <command>");
@@ -32,5 +43,10 @@ public class AliasCommand : ICommand
         {
             Console.WriteLine($"Error creating alias: {ex.Message}");
         }
+    }
+
+    private void ShowAllAliases()
+    {
+        Console.WriteLine("Current aliases:");
     }
 }
