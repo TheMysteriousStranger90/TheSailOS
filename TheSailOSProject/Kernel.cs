@@ -54,13 +54,20 @@ namespace TheSailOSProject
 
         protected override void Run()
         {
-            if (_loggedInUser == null)
+            try
             {
-                PromptLogin();
+                if (_loggedInUser == null)
+                {
+                    PromptLogin();
+                }
+                else
+                {
+                    ShowCommandPrompt();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ShowCommandPrompt();
+                ShowErrorScreen(ex);
             }
         }
 
@@ -209,6 +216,18 @@ namespace TheSailOSProject
         {
             _loggedInUser = user;
             ConsoleManager.WriteLineColored($"Welcome, {user.Username}!", ConsoleStyle.Colors.Success);
+        }
+        
+        static void ShowErrorScreen(Exception ex)
+        {
+            Console.Clear();
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("A fatal error has occurred:");
+            Console.WriteLine(ex.Message);
+            Console.WriteLine("Press any key to reboot...");
+            Console.ReadKey();
+            Sys.Power.Reboot();
         }
     }
 }
