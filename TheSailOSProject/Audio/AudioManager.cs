@@ -28,6 +28,14 @@ namespace TheSailOSProject.Audio
 
                 _driver = AC97.Initialize(BufferSize);
                 _mixer = new AudioMixer();
+                
+                _audioManager = new Cosmos.System.Audio.AudioManager()
+                {
+                    Stream = _mixer,
+                    Output = _driver
+                };
+
+                _audioManager.Enable();
                 _isInitialized = true;
 
                 ConsoleManager.WriteLineColored("[INFO] Audio driver initialized successfully.",

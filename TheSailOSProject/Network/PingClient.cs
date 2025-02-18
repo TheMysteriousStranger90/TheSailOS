@@ -5,72 +5,56 @@ namespace TheSailOSProject.Network;
 
 public class PingClient
 {
-    private const int PING_TIMEOUT = 5000;
     private const int PING_COUNT = 4;
 
-    public static PingResult[] Ping(string ipAddress)
+    public void PingIP(string ipAddress)
     {
-        var results = new PingResult[PING_COUNT];
+        float successful = 0;
+
+        if (Cosmos.HAL.NetworkDevice.Devices.Count == 0)
+        {
+            Console.WriteLine("There aren't any usable network devices installed!");
+            return;
+        }
 
         try
         {
-            Console.WriteLine($"Pinging {ipAddress} with 32 bytes of data:");
-            Address address = Address.Parse(ipAddress);
+            Console.WriteLine($"Pinging \"{ipAddress}\"...");
+            EndPoint endPoint = new EndPoint(Address.Zero, 0);
 
             using (var icmpClient = new ICMPClient())
             {
-                icmpClient.Connect(address);
+                icmpClient.Connect(Address.Parse(ipAddress));
 
                 for (int i = 0; i < PING_COUNT; i++)
                 {
                     try
                     {
-                        var startTime = System.DateTime.Now.Year;
                         icmpClient.SendEcho();
-                        
-                        EndPoint endpoint = new EndPoint(Address.Zero, 0);
-                        int time = icmpClient.Receive(ref endpoint);
-
-                        results[i] = new PingResult
+                        int time = icmpClient.Receive(ref endPoint);
+                        if (time >= 0)
                         {
-                            Success = time >= 0,
-                            Time = time,
-                            Error = null
-                        };
+                            Console.WriteLine($"Response received in {time} millisecond(s)");
+                            successful++;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Ping failed.");
+                        }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        results[i] = new PingResult
-                        {
-                            Success = false,
-                            Time = -1,
-                            Error = ex.Message
-                        };
+                        Console.WriteLine("Ping failed.");
                     }
                 }
             }
+
+            Console.WriteLine(
+                $"Success rate: {(successful / PING_COUNT * 100):F0} percent. ({successful}/{PING_COUNT})");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to initialize ping: {ex.Message}");
-            for (int i = 0; i < PING_COUNT; i++)
-            {
-                results[i] = new PingResult
-                {
-                    Success = false,
-                    Time = -1,
-                    Error = ex.Message
-                };
-            }
+            Console.WriteLine($"Ping operation failed: {ex.Message}");
         }
-
-        return results;
     }
-}
-
-public struct PingResult
-{
-    public bool Success;
-    public int Time;
-    public string Error;
 }

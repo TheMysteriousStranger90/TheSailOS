@@ -33,6 +33,8 @@
         <Timeout>5</Timeout>
         <ExtractMapFile>True</ExtractMapFile>
         <DefineConstants>THESAILOS</DefineConstants>
+        <DebugEnabled>False</DebugEnabled>
+        <VMWareEdition>Workstation</VMWareEdition>
     </PropertyGroup>
 
     <ItemGroup>
