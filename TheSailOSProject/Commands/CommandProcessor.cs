@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TheSailOSProject.Audio;
+using TheSailOSProject.Commands.Applications;
 using TheSailOSProject.Commands.Audio;
 using TheSailOSProject.Commands.CPU;
 using TheSailOSProject.Commands.Directories;
@@ -104,7 +105,9 @@ public class CommandProcessor
             { "login", new LoginCommand(_loginHandler) },
             { "createuser", new CreateUserCommand() },
             { "deleteuser", new DeleteUserCommand() },
-            { "listusers", new ListUsersCommand() }
+            { "listusers", new ListUsersCommand() },
+            
+            { "calculator", new CalculatorCommand() }
         };
     }
 
@@ -217,7 +220,11 @@ public class CommandProcessor
             { "GAME COMMANDS", "The following commands are used to play games:" },
             { "snake", "Play Snake game.\nUse arrow keys to move, ESC to exit." },
             { "tetris", "Play Tetris game.\nUse arrow keys to move, ESC to exit." },
-            { "tictactoe", "Play Tic-Tac-Toe against the computer.\nUse numpad (1-9) to place X." }
+            { "tictactoe", "Play Tic-Tac-Toe against the computer.\nUse numpad (1-9) to place X." },
+            
+            //Application Commands
+            { "APPLICATION COMMANDS", "The following commands are used to manage applications:" },
+            { "calculator", "Opens the calculator application.\nUsage: calculator" }
         };
     }
 }
