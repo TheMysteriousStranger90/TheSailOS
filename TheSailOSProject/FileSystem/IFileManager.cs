@@ -1,4 +1,6 @@
-﻿namespace TheSailOSProject.FileSystem;
+﻿using System.Collections.Generic;
+
+namespace TheSailOSProject.FileSystem;
 
 public interface IFileManager
 {
@@ -6,6 +8,7 @@ public interface IFileManager
     bool CreateFile(string path);
     bool DeleteFile(string path);
     bool WriteFile(string path, string content);
+    bool WriteFile(string path, List<string> content);
     bool RenameFile(string path, string newName);
     bool CopyFile(string sourcePath, string destinationPath);
     bool MoveFile(string sourcePath, string destinationPath);

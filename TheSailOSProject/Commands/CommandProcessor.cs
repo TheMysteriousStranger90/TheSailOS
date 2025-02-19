@@ -108,7 +108,7 @@ public class CommandProcessor
             { "listusers", new ListUsersCommand() },
             
             { "calculator", new CalculatorCommand() },
-            { "textedit", new TextEditorCommand() }
+            { "textedit", new TextEditorCommand(fileManager) }
         };
     }
 

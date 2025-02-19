@@ -86,7 +86,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
             {
                 return System.Text.Encoding.UTF8.GetString(_fileCache[path]);
             }
-            
+
             string[] lines = File.ReadAllLines(path);
             string content = string.Join(Environment.NewLine, lines);
             _fileCache[path] = System.Text.Encoding.UTF8.GetBytes(content);
@@ -107,6 +107,31 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         {
             File.WriteAllText(path, content);
             _fileCache[path] = System.Text.Encoding.UTF8.GetBytes(content);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] {ex.Message}");
+            throw new FileSystemException($"Operation failed: {ex.Message}", ex);
+        }
+    }
+
+    public bool WriteFile(string path, List<string> content)
+    {
+        EnsureNotSystemPath(path);
+
+        try
+        {
+            using (var fs = File.Create(path))
+            using (var writer = new StreamWriter(fs))
+            {
+                foreach (var line in content)
+                {
+                    writer.WriteLine(line);
+                }
+            }
+        
+            _fileCache.Remove(path);
             return true;
         }
         catch (Exception ex)

@@ -2,20 +2,23 @@
 using System.Collections.Generic;
 using System.IO;
 using TheSailOSProject.Styles;
+using TheSailOSProject.FileSystem;
 
 namespace TheSailOSProject.Applications
 {
     public class TextEditor
     {
         private static bool _isModified;
+        private static IFileManager _fileManager;
 
-        public static void Run(string filePath)
+        public static void Run(string filePath, IFileManager fileManager)
         {
             Console.Clear();
             ConsoleManager.WriteLineColored("Simple Text Editor", ConsoleStyle.Colors.Primary);
 
             List<string> lines = new List<string>();
             _isModified = false;
+            _fileManager = fileManager;
 
             if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
             {
@@ -54,6 +57,11 @@ namespace TheSailOSProject.Applications
                 }
                 else if (input.ToLower() == "save")
                 {
+                    if (string.IsNullOrEmpty(filePath))
+                    {
+                        ConsoleManager.WriteLineColored("Enter file path:", ConsoleStyle.Colors.Primary);
+                        filePath = Console.ReadLine();
+                    }
                     SaveFile(filePath, lines);
                     _isModified = false;
                 }
@@ -98,7 +106,9 @@ namespace TheSailOSProject.Applications
 
             try
             {
-                File.WriteAllLines(filePath, lines);
+                // Use the WriteFile method from TheSailFileSystem
+                _fileManager.WriteFile(filePath, lines);
+
                 ConsoleManager.WriteLineColored($"File saved to: {filePath}", ConsoleStyle.Colors.Success);
             }
             catch (Exception ex)
