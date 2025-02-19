@@ -107,7 +107,8 @@ public class CommandProcessor
             { "deleteuser", new DeleteUserCommand() },
             { "listusers", new ListUsersCommand() },
             
-            { "calculator", new CalculatorCommand() }
+            { "calculator", new CalculatorCommand() },
+            { "textedit", new TextEditorCommand() }
         };
     }
 
@@ -224,7 +225,8 @@ public class CommandProcessor
             
             //Application Commands
             { "APPLICATION COMMANDS", "The following commands are used to manage applications:" },
-            { "calculator", "Opens the calculator application.\nUsage: calculator" }
+            { "calculator", "Opens the calculator application.\nUsage: calculator" },
+            { "textedit", "Opens the text editor application.\nUsage: edittext" }
         };
     }
 }

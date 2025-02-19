@@ -86,8 +86,9 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
             {
                 return System.Text.Encoding.UTF8.GetString(_fileCache[path]);
             }
-
-            string content = File.ReadAllText(path);
+            
+            string[] lines = File.ReadAllLines(path);
+            string content = string.Join(Environment.NewLine, lines);
             _fileCache[path] = System.Text.Encoding.UTF8.GetBytes(content);
             return content;
         }

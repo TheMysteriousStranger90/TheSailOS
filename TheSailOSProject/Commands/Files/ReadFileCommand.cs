@@ -30,7 +30,12 @@ public class ReadFileCommand : ICommand
             string content = _fileManager.ReadFile(path);
             if (content != null)
             {
-                Console.WriteLine($"Content of {path}:\n{content}");
+                Console.WriteLine($"Content of {path}:");
+                string[] lines = content.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                foreach (string line in lines)
+                {
+                    Console.WriteLine(line);
+                }
             }
         }
         catch (ArgumentException ex)
