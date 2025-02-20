@@ -507,4 +507,8 @@ $RECYCLE.BIN/
 .vs/
 .vscode
 
+venv/
 
+docs/
+site/
+mkdocs.yml
