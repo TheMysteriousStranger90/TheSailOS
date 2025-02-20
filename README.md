@@ -2,7 +2,7 @@
 
 ## Overview
 
-TheSailOS is an operating system built using C# and the Cosmos framework. This project aims to provide a learning experience in OS development, exploring various aspects such as kernel design, file system management, networking, process management, and user interface.
+TheSailOS is an operating system built using C# and the Cosmos (C# Open Source Managed Operating System) framework. This project aims to provide a learning experience in OS development, exploring various aspects such as kernel design, file system management, networking, process management, and user interface.
 
 ## Features
 
@@ -30,6 +30,16 @@ TheSailOS is an operating system built using C# and the Cosmos framework. This p
 - **Audio:**
     - Audio playback support
 
+## Important Note: Version 0.0.1 - Alpha Stage
+
+This is an early alpha release (version 0.0.1) of TheSailOS. As such, it is not feature-complete and may contain bugs, unstable components, and unimplemented features. Use with caution and be aware that data loss or system instability may occur.
+
+## Default Credentials
+
+For administrative access, use the following default credentials:
+
+- **Username:** admin
+- **Password:** admin
 
 ## Contributing
 
