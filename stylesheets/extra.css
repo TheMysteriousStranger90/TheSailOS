@@ -1,0 +1,48 @@
+﻿body {
+    background-color: #121212;
+    color: #D8BFD8;
+}
+
+.md-typeset h1 {
+    color: #8B008B !important;
+}
+
+.md-header {
+    background-color: #212121;
+}
+
+.md-footer{
+    background-color: #212121;
+}
+
+a {
+    color: #8B008B; /* Dark Magenta */
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #8B008B #212121;
+}
+
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #8B008B #212121;
+}
+
+.md-main__inner {
+    scrollbar-color: #8B008B #212121;
+}
+
+.md-content {
+    background-color: #121212;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.md-nav__link {
+    color: #8B008B !important;;
+}
+
+.md-nav__link--active {
+    color: #E0B0FF !important;
+}
