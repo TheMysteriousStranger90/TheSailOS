@@ -191,7 +191,7 @@ public class CommandProcessor
             { "httpget", "Retrieves the content of a web page.\nUsage: httpget <url>" },
             { "ping", "Pings the specified IP address.\nUsage: ping <ip_address>" },
             { "netshutdown", "Shuts down the network.\nUsage: netshutdown" },
-            { "netconfig", "Configures the network.\nUsage: netconfig" },
+            { "netconfig", "Configures the network settings.\nUsage:\nnetconfig - Configure with default settings (192.168.1.69)\nnetconfig <ip_address> <subnet_mask> <gateway> - Configure with custom settings\nExample: netconfig 192.168.1.69 255.255.255.0 192.168.1.254" },
             { "netstatus", "Displays network status.\nUsage: netstatus" },
 
             // Hardware Commands
