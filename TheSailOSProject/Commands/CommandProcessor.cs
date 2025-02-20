@@ -81,6 +81,8 @@ public class CommandProcessor
             { "netstatus", new NetworkStatusCommand() },
             { "tcpserver", new TcpServerCommand() },
             { "tcpclient", new TcpClientCommand() },
+            { "udpserver", new UdpServerCommand() },
+            { "udpclient", new UdpClientCommand() },
             //{ "httpget", new HttpGetCommand() },
 
             { "memory", new MemoryCommand() },
@@ -109,7 +111,7 @@ public class CommandProcessor
             { "createuser", new CreateUserCommand() },
             { "deleteuser", new DeleteUserCommand() },
             { "listusers", new ListUsersCommand() },
-            
+
             { "calculator", new CalculatorCommand() },
             { "textedit", new TextEditorCommand(fileManager) }
         };
@@ -194,10 +196,50 @@ public class CommandProcessor
             { "httpget", "Retrieves the content of a web page.\nUsage: httpget <url>" },
             { "ping", "Pings the specified IP address.\nUsage: ping <ip_address>" },
             { "netshutdown", "Shuts down the network.\nUsage: netshutdown" },
-            { "netconfig", "Configures the network settings.\nUsage:\nnetconfig - Configure with default settings (192.168.1.69)\nnetconfig <ip_address> <subnet_mask> <gateway> - Configure with custom settings\nExample: netconfig 192.168.1.69 255.255.255.0 192.168.1.254" },
+            {
+                "netconfig",
+                "Configures the network settings.\nUsage:\nnetconfig - Configure with default settings (192.168.1.69)\nnetconfig <ip_address> <subnet_mask> <gateway> - Configure with custom settings\nExample: netconfig 192.168.1.69 255.255.255.0 192.168.1.254"
+            },
             { "netstatus", "Displays network status.\nUsage: netstatus" },
-            { "tcpserver", "Starts a TCP server.\nUsage: tcpserver"},
-            { "tcpclient", "Starts a TCP client.\nUsage: tcpclient"},
+            { "tcpserver", "Starts a TCP server.\nUsage: tcpserver" },
+            {
+                "tcpclient",
+                @"Starts a TCP client and connects to a remote server. Usage: tcpclient <destination_ip> <destination_port> <local_port> <data> [timeout] Parameters:
+  destination_ip   - Remote server IP address (e.g. 192.168.1.100)
+  destination_port - Remote server port number (e.g. 80)
+  local_port      - Local port number to use (e.g. 8080)
+  data            - Data to send to the server
+  timeout         - Optional connection timeout in ms (default: 80)
+Examples:
+  tcpclient 192.168.1.100 80 8080 ""GET / HTTP/1.1""
+  tcpclient 10.0.0.1 8080 9000 ""Hello Server"" 120"
+            },
+            {
+                "udpserver", "Starts a UDP server.\n" +
+                             "Usage: udpserver [port]\n" +
+                             "Parameters:\n" +
+                             "  port - Port number to listen on (default: 8080)\n" +
+                             "Example:\n" +
+                             "  udpserver\n" +
+                             "  udpserver 9000"
+            },
+            {
+                "udpclient", @"Starts a UDP client and connects to a remote server.
+
+Usage: udpclient <destination_ip> <destination_port> <local_port> <message> [timeout]
+
+Parameters:
+  destination_ip   - Remote server IP address (e.g. 192.168.1.100)
+  destination_port - Remote server port number (e.g. 8080)
+  local_port      - Local port number to use (e.g. 9000)
+  message         - Message to send to the server
+  timeout         - Optional connection timeout in ms (default: 80)
+
+Examples:
+  udpclient 192.168.1.100 8080 9000 ""Hello Server""
+  udpclient 10.0.0.1 8080 9000 ""Test Message"" 120"
+            },
+
 
             // Hardware Commands
             { "HARDWARE COMMANDS", "The following commands are used to display hardware information:" },
@@ -227,7 +269,7 @@ public class CommandProcessor
             { "snake", "Play Snake game.\nUse arrow keys to move, ESC to exit." },
             { "tetris", "Play Tetris game.\nUse arrow keys to move, ESC to exit." },
             { "tictactoe", "Play Tic-Tac-Toe against the computer.\nUse numpad (1-9) to place X." },
-            
+
             //Application Commands
             { "APPLICATION COMMANDS", "The following commands are used to manage applications:" },
             { "calculator", "Opens the calculator application.\nUsage: calculator" },
