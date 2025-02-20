@@ -79,6 +79,9 @@ public class CommandProcessor
             { "netshutdown", new NetworkShutdownCommand() },
             { "netconfig", new NetworkConfigureCommand() },
             { "netstatus", new NetworkStatusCommand() },
+            { "tcpserver", new TcpServerCommand() },
+            { "tcpclient", new TcpClientCommand() },
+            //{ "httpget", new HttpGetCommand() },
 
             { "memory", new MemoryCommand() },
             { "cpu", new CPUCommand() },
@@ -193,6 +196,8 @@ public class CommandProcessor
             { "netshutdown", "Shuts down the network.\nUsage: netshutdown" },
             { "netconfig", "Configures the network settings.\nUsage:\nnetconfig - Configure with default settings (192.168.1.69)\nnetconfig <ip_address> <subnet_mask> <gateway> - Configure with custom settings\nExample: netconfig 192.168.1.69 255.255.255.0 192.168.1.254" },
             { "netstatus", "Displays network status.\nUsage: netstatus" },
+            { "tcpserver", "Starts a TCP server.\nUsage: tcpserver"},
+            { "tcpclient", "Starts a TCP client.\nUsage: tcpclient"},
 
             // Hardware Commands
             { "HARDWARE COMMANDS", "The following commands are used to display hardware information:" },
