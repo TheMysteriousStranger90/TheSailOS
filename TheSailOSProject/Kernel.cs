@@ -1,4 +1,5 @@
 ﻿using System;
+using CosmosFtpServer;
 using TheSailOSProject.Audio;
 using TheSailOSProject.Commands;
 using TheSailOSProject.Commands.Directories;
@@ -17,15 +18,13 @@ namespace TheSailOSProject
     {
         private TheSailFileSystem _fileSystem;
         private CommandProcessor _commandProcessor;
-
+        private User _loggedInUser = null;
         private ICommandHistoryManager _historyManager;
         private IAliasManager _aliasManager;
         private ICurrentDirectoryManager _currentDirectoryManager;
         private IRootDirectoryProvider _rootDirectoryProvider;
         private IAudioManager _audioManager;
-
-        private User _loggedInUser = null;
-
+        
         protected override void BeforeRun()
         {
             ConsoleManager.Initialize();
@@ -210,6 +209,22 @@ namespace TheSailOSProject
             ProcessManager.Register(memoryService);
             ProcessManager.Start(memoryService);
             ProcessManager.Update();
+        }
+        
+        private void InitializeFtpServer()
+        {
+            Console.WriteLine("Initializing FTP Server...");
+            
+            _rootDirectoryProvider = new RootDirectoryProvider();
+            _currentDirectoryManager = new CurrentDirectoryManager(_rootDirectoryProvider.GetRootDirectory());
+            
+            ConsoleManager.WriteLineColored("Starting FTP server...", ConsoleStyle.Colors.Primary);
+
+            var ftpServer = new FtpServer(_fileSystem, _currentDirectoryManager.GetCurrentDirectory());
+            Console.WriteLine("Listening...");
+            ftpServer.Listen();
+
+            Console.WriteLine("Client connected.");
         }
 
         public void OnLoginSuccess(User user)
