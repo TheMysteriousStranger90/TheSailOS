@@ -27,7 +27,7 @@ public class CreateFileCommand : ICommand
         try
         {
             _currentDirectoryManager.ValidatePath(path);
-            _fileManager.CreateFile(path);
+            _fileManager.CreateFileTheSail(path);
             Console.WriteLine($"File created: {path}");
         }
         catch (ArgumentException ex)

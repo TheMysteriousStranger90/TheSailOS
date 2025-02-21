@@ -2,6 +2,6 @@
 
 public interface IVFSManager
 {
-    long GetAvailableFreeSpace(string drive);
-    string GetFileSystemType(string drive);
+    long GetAvailableFreeSpaceTheSail(string drive);
+    string GetFileSystemTypeTheSail(string drive);
 }

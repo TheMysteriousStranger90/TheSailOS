@@ -71,10 +71,10 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
             
             string systemDirectory = Path.Combine(baseDrive, "System");
             Console.WriteLine($"[INFO] Using system directory: {systemDirectory}");
-
-            if (!Directory.Exists(systemDirectory))
+            var dir = VFSManager.GetDirectory(systemDirectory);
+            if (dir == null)
             {
-                Directory.CreateDirectory(systemDirectory);
+                VFSManager.CreateDirectory(systemDirectory);
                 Console.WriteLine($"[INFO] Created system directory: {systemDirectory}");
             }
         }
@@ -99,7 +99,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
 
             if (!Directory.Exists(SystemDirectory))
             {
-                Directory.CreateDirectory(SystemDirectory);
+                Directory.CreateDirectoryTheSail(SystemDirectory);
                 Console.WriteLine($"[INFO] Created system directory: {SystemDirectory}");
             }
 
@@ -119,7 +119,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
 */
 
     // IFileManager implementation
-    public bool CreateFile(string path)
+    public bool CreateFileTheSail(string path)
     {
         EnsureNotSystemPath(path);
 
@@ -135,7 +135,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         }
     }
 
-    public bool DeleteFile(string path)
+    public bool DeleteFileTheSail(string path)
     {
         EnsureNotSystemPath(path);
 
@@ -237,7 +237,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
 
             string content = ReadFile(path);
             WriteFile(newPath, content);
-            DeleteFile(path);
+            DeleteFileTheSail(path);
 
             Console.WriteLine($"File renamed successfully to: {newPath}");
             return true;
@@ -288,7 +288,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
 
             string content = ReadFile(sourcePath);
             WriteFile(destinationPath, content);
-            DeleteFile(sourcePath);
+            DeleteFileTheSail(sourcePath);
 
             Console.WriteLine("File moved successfully");
             return true;
@@ -301,7 +301,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
     }
 
     // IDirectoryManager implementation
-    public bool CreateDirectory(string path)
+    public bool CreateDirectoryTheSail(string path)
     {
         EnsureNotSystemPath(path);
 
@@ -317,7 +317,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         }
     }
 
-    public bool DeleteDirectory(string path)
+    public bool DeleteDirectoryTheSail(string path)
     {
         EnsureNotSystemPath(path);
 
@@ -407,7 +407,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
 
             Directory.CreateDirectory(newPath);
             CopyDirectory(path, newPath);
-            DeleteDirectory(path);
+            DeleteDirectoryTheSail(path);
 
             return true;
         }
@@ -489,7 +489,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
     }
 
     // IVFSManager implementation
-    public long GetAvailableFreeSpace(string drive)
+    public long GetAvailableFreeSpaceTheSail(string drive)
     {
         try
         {
@@ -502,7 +502,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         }
     }
 
-    public string GetFileSystemType(string drive)
+    public string GetFileSystemTypeTheSail(string drive)
     {
         try
         {

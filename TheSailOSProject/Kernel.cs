@@ -20,7 +20,6 @@ namespace TheSailOSProject
         private CommandProcessor _commandProcessor;
         private User _loggedInUser = null;
         private ICommandHistoryManager _historyManager;
-        private IAliasManager _aliasManager;
         private ICurrentDirectoryManager _currentDirectoryManager;
         private IRootDirectoryProvider _rootDirectoryProvider;
         private IAudioManager _audioManager;

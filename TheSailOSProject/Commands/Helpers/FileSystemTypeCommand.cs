@@ -24,7 +24,7 @@ public class FileSystemTypeCommand : ICommand
 
         try
         {
-            string fileSystemType = _vfsManager.GetFileSystemType(drive);
+            string fileSystemType = _vfsManager.GetFileSystemTypeTheSail(drive);
             Console.WriteLine($"File system type on drive {drive}: {fileSystemType}");
         }
         catch (Exception ex)
