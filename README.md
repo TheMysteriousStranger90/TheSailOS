@@ -1,4 +1,6 @@
 # TheSailOS
+![Image 1](Images/Screen1.png)
+![Image 2](Images/Screen2.png)
 
 ## Overview
 

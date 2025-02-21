@@ -21,6 +21,78 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         {
             _vfs = new CosmosVFS();
             VFSManager.RegisterVFS(_vfs);
+            Console.WriteLine("[INFO] Virtual filesystem initialized");
+            _fileCache = new Dictionary<string, byte[]>();
+
+            var disks = VFSManager.GetDisks();
+            if (disks == null || disks.Count == 0)
+            {
+                throw new FileSystemException("No disks found");
+            }
+
+            var systemDisk = disks[0];
+            if (systemDisk == null)
+            {
+                throw new FileSystemException("System disk is null");
+            }
+
+            Console.WriteLine("[INFO] Mounting system disk...");
+            systemDisk.Mount();
+            Console.WriteLine("[INFO] System disk mounted successfully");
+            
+            Console.WriteLine("[INFO] Listing partitions for the system disk:");
+            if (systemDisk.Partitions != null)
+            {
+                for (int i = 0; i < systemDisk.Partitions.Count; i++)
+                {
+                    string rootPath = systemDisk.Partitions[i].RootPath;
+                    Console.WriteLine($"  Partition {i}: RootPath = '{rootPath}'");
+                }
+            }
+            
+            string baseDrive = null;
+            if (systemDisk.Partitions != null && systemDisk.Partitions.Count > 0)
+            {
+                baseDrive = systemDisk.Partitions[0].RootPath;
+            }
+
+            if (string.IsNullOrEmpty(baseDrive))
+            {
+                Console.WriteLine("[WARNING] No valid partition found. Falling back to default drive letter '0:\\'");
+                baseDrive = "0:\\";
+            }
+            else
+            {
+                if (!baseDrive.EndsWith("\\"))
+                {
+                    baseDrive += "\\";
+                }
+            }
+            
+            string systemDirectory = Path.Combine(baseDrive, "System");
+            Console.WriteLine($"[INFO] Using system directory: {systemDirectory}");
+
+            if (!Directory.Exists(systemDirectory))
+            {
+                Directory.CreateDirectory(systemDirectory);
+                Console.WriteLine($"[INFO] Created system directory: {systemDirectory}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to initialize filesystem: {ex.Message}");
+            throw new FileSystemException("Failed to initialize filesystem", ex);
+        }
+    }
+    
+    /*
+
+         public void Initialize()
+    {
+        try
+        {
+            _vfs = new CosmosVFS();
+            VFSManager.RegisterVFS(_vfs);
 
             _fileCache = new Dictionary<string, byte[]>();
             Console.WriteLine("[INFO] Virtual filesystem initialized");
@@ -43,6 +115,8 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
             throw new FileSystemException("Failed to initialize filesystem", ex);
         }
     }
+
+*/
 
     // IFileManager implementation
     public bool CreateFile(string path)
@@ -130,7 +204,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
                     writer.WriteLine(line);
                 }
             }
-        
+
             _fileCache.Remove(path);
             return true;
         }
@@ -554,7 +628,7 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
             ConsoleManager.WriteLineColored($"Error listing partitions: {ex.Message}", ConsoleStyle.Colors.Error);
         }
     }
-    
+
     public void MountPartition(string partition)
     {
         try

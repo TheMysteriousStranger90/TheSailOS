@@ -10,33 +10,61 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <BinFormat>ELF</BinFormat>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <CompressionType>Gzip</CompressionType>
+        <RemoveBootDebugOutput>True</RemoveBootDebugOutput>
+        <UseCompilerOptimizations>True</UseCompilerOptimizations>
+        <OptimizationLevel>2</OptimizationLevel>
+        <TraceMode>All</TraceMode>
+        <Timeout>5</Timeout>
+        <EnableFileSystem>True</EnableFileSystem>
+        <DefaultFileSystem>FAT32</DefaultFileSystem>
+        <StackCorruptionDetectionEnabled>True</StackCorruptionDetectionEnabled>
+        <StackCorruptionDetectionLevel>MethodFooters</StackCorruptionDetectionLevel>
+        <Deployment>ISO</Deployment>
+        <DebugEnabled>True</DebugEnabled>
+        <DebugMode>Source</DebugMode>
+        <IgnoreDebugStubAttribute>False</IgnoreDebugStubAttribute>
+        <ISOFile>bin\Debug\net6.0\TheSailOSProject.iso</ISOFile>
+        <CompileVBEMultiboot>False</CompileVBEMultiboot>
+        <ExtractMapFile>False</ExtractMapFile>
         <EnableGDB>False</EnableGDB>
         <StartCosmosGDB>False</StartCosmosGDB>
         <VisualStudioDebugPort>Pipe: Cosmos\Serial</VisualStudioDebugPort>
         <CosmosDebugPort>Serial: COM1</CosmosDebugPort>
         <Launch>VMware</Launch>
-        <Profile>VMware</Profile>
-        <Description>Use VMware Player or Workstation to deploy and debug.</Description>
+        <Profile>ISO</Profile>
+        <Description>Creates a bootable ISO image which can be burned to a DVD.</Description>
         <PxeInterface>192.168.0.8</PxeInterface>
-        
-        <VBEResolution>1024x768x32</VBEResolution>
-        <BinFormat>Elf</BinFormat>
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <CompressionType>Gzip</CompressionType>
-        <RemoveBootDebugOutput>True</RemoveBootDebugOutput>
-        <StackCorruptionDetectionEnabled>True</StackCorruptionDetectionEnabled>
-        <UseCompilerOptimizations>True</UseCompilerOptimizations>
-        <OptimizationLevel>2</OptimizationLevel>
-        <TraceMode>All</TraceMode>
-        <IgnoreDebugStubAttribute>False</IgnoreDebugStubAttribute>
-        <Timeout>5</Timeout>
-        <ExtractMapFile>True</ExtractMapFile>
         <DefineConstants>THESAILOS</DefineConstants>
-        <DebugEnabled>False</DebugEnabled>
         <VMWareEdition>Workstation</VMWareEdition>
+        
+        
+        <VMware_StackCorruptionDetectionEnabled>True</VMware_StackCorruptionDetectionEnabled>
+        <VMware_StackCorruptionDetectionLevel>MethodFooters</VMware_StackCorruptionDetectionLevel>
+        <VMware_Description>Use VMware Player or Workstation to deploy and debug.</VMware_Description>
+        <VMware_Deployment>ISO</VMware_Deployment>
+        <VMware_Launch>VMware</VMware_Launch>
+        <VMware_DebugEnabled>True</VMware_DebugEnabled>
+        <VMware_DebugMode>Source</VMware_DebugMode>
+        <VMware_IgnoreDebugStubAttribute>False</VMware_IgnoreDebugStubAttribute>
+        <VMware_CosmosDebugPort>Serial: COM1</VMware_CosmosDebugPort>
+        <VMware_VisualStudioDebugPort>Pipe: Cosmos\Serial</VMware_VisualStudioDebugPort>
+        <VMware_PxeInterface>192.168.0.8</VMware_PxeInterface>
+        <VMware_EnableGDB>False</VMware_EnableGDB>
+        <VMware_StartCosmosGDB>False</VMware_StartCosmosGDB>
+        <VMware_ISOFile>bin\Debug\net6.0\TheSailOSProject.iso</VMware_ISOFile>
+        <VMware_CompileVBEMultiboot>False</VMware_CompileVBEMultiboot>
+        <VMware_ExtractMapFile>False</VMware_ExtractMapFile>
+        <VMware_EnableFileSystem>True</VMware_EnableFileSystem>
+        <VMware_DefaultFileSystem>FAT32</VMware_DefaultFileSystem>
     </PropertyGroup>
-
+    
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DebugEnabled>False</DebugEnabled>
+    </PropertyGroup>
+    
     <ItemGroup>
         <PackageReference Include="Cosmos.Build" Version="0-*" NoWarn="NU1604" />
         <PackageReference Include="Cosmos.Debug.Kernel" Version="0-*" NoWarn="NU1604" />
@@ -47,8 +75,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Commands\Logging\" />
-      <Folder Include="Logging\" />
+        <Folder Include="Commands\Logging\" />
+        <Folder Include="Logging\" />
     </ItemGroup>
 
 </Project>

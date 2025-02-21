@@ -29,6 +29,9 @@ namespace TheSailOSProject
         {
             ConsoleManager.Initialize();
             System.Threading.Thread.Sleep(100);
+            
+            InitializeFileSystem();
+            ConsoleManager.WriteLineColored("[FileSystem] System initialized", ConsoleStyle.Colors.Success);
 
             InitializeProcessManager();
             ConsoleManager.WriteLineColored("[ProcessManager] System initialized", ConsoleStyle.Colors.Success);
@@ -38,10 +41,7 @@ namespace TheSailOSProject
 
             InitializeMemoryManager();
             ConsoleManager.WriteLineColored("[MemoryManager] System initialized", ConsoleStyle.Colors.Success);
-
-            InitializeFileSystem();
-            ConsoleManager.WriteLineColored("[FileSystem] System initialized", ConsoleStyle.Colors.Success);
-
+            
             InitializeNetwork();
             ConsoleManager.WriteLineColored("[Network] System initialized", ConsoleStyle.Colors.Success);
 
