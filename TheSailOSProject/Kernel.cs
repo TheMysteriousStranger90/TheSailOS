@@ -8,17 +8,19 @@ using TheSailOSProject.FileSystem;
 using TheSailOSProject.Hardware.Memory;
 using TheSailOSProject.Network;
 using TheSailOSProject.Processes;
+using TheSailOSProject.Session;
 using TheSailOSProject.Styles;
 using TheSailOSProject.Users;
 using Sys = Cosmos.System;
 
 namespace TheSailOSProject
 {
-    public class Kernel : Sys.Kernel, ILoginHandler
+    public class Kernel : Sys.Kernel, ILoginHandler, ILogoutHandler
     {
         private TheSailFileSystem _fileSystem;
         private CommandProcessor _commandProcessor;
         private User _loggedInUser = null;
+        private Session.Session _currentSession = null;
         private ICommandHistoryManager _historyManager;
         private ICurrentDirectoryManager _currentDirectoryManager;
         private IRootDirectoryProvider _rootDirectoryProvider;
@@ -54,18 +56,38 @@ namespace TheSailOSProject
         {
             try
             {
-                if (_loggedInUser == null)
+                while (true)
                 {
-                    PromptLogin();
-                }
-                else
-                {
-                    ShowCommandPrompt();
+                    if (_loggedInUser == null)
+                    {
+                        PromptLogin();
+                    }
+                    else
+                    {
+                        ProcessUserSession();
+                    }
                 }
             }
             catch (Exception ex)
             {
                 ShowErrorScreen(ex);
+            }
+        }
+        
+        private void ProcessUserSession()
+        {
+            while (_loggedInUser != null)
+            {
+                ShowCommandPrompt();
+                var input = Console.ReadLine();
+            
+                if (!string.IsNullOrEmpty(input))
+                {
+                    ProcessCommand(input);
+                    
+                    if (_loggedInUser == null) 
+                        return;
+                }
             }
         }
 
@@ -99,18 +121,16 @@ namespace TheSailOSProject
 
         private void ShowCommandPrompt()
         {
-            ConsoleManager.WriteColored($"{_currentDirectoryManager.GetCurrentDirectory()}",
-                ConsoleStyle.Colors.Primary);
-            ConsoleManager.WriteColored(ConsoleStyle.Symbols.Prompt + " ", ConsoleStyle.Colors.Primary);
-
-            var input = Console.ReadLine();
-
-            if (!string.IsNullOrEmpty(input))
-            {
-                ProcessCommand(input);
-            }
-
-            ShowCommandPrompt();
+            SessionManager.UpdateSessionActivity(_currentSession?.SessionId);
+    
+            ConsoleManager.WriteColored(
+                $"{_currentDirectoryManager.GetCurrentDirectory()}", 
+                ConsoleStyle.Colors.Primary
+            );
+            ConsoleManager.WriteColored(
+                $"{ConsoleStyle.Symbols.Prompt} ", 
+                ConsoleStyle.Colors.Primary
+            );
         }
 
         private void ProcessCommand(string input)
@@ -160,6 +180,7 @@ namespace TheSailOSProject
                 _fileSystem,
                 _fileSystem,
                 _audioManager,
+                this,
                 this
             );
         }
@@ -229,7 +250,19 @@ namespace TheSailOSProject
         public void OnLoginSuccess(User user)
         {
             _loggedInUser = user;
+            _currentSession = SessionManager.StartSession(user);
             ConsoleManager.WriteLineColored($"Welcome, {user.Username}!", ConsoleStyle.Colors.Success);
+        }
+        
+        public void OnLogout()
+        {
+            if (_loggedInUser == null) return;
+
+            SessionManager.EndSession(_currentSession.SessionId);
+            _loggedInUser = null;
+            _currentSession = null;
+            Console.Clear();
+            ConsoleManager.WriteLineColored("Successfully logged out.", ConsoleStyle.Colors.Success);
         }
         
         static void ShowErrorScreen(Exception ex)
