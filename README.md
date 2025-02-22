@@ -24,6 +24,15 @@ TheSailOS is an operating system built using C# and the Cosmos (C# Open Source M
     - Command aliasing
     - Built-in commands for file system, system, network, hardware, and process management
 
+- **User Sessions:**
+    - Session management for user authentication and authorization.
+    - Login and logout commands.
+    - Session tracking and activity monitoring.
+
+- **Process Management:**
+    - Ability to run applications and games as separate processes.
+    - Memory management for processes.
+
 - **Applications:**
     - Text editor
     - Calculator
