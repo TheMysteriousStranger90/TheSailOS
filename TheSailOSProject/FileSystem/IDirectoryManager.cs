@@ -2,8 +2,8 @@
 
 public interface IDirectoryManager
 {
-    bool CreateDirectory(string path);
-    bool DeleteDirectory(string path);
+    bool CreateDirectoryTheSail(string path);
+    bool DeleteDirectoryTheSail(string path);
     string[] ListFiles(string path);
     string[] ListDirectories(string path);
     bool MoveDirectory(string sourcePath, string destinationPath);

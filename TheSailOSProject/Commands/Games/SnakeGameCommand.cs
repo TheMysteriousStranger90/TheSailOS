@@ -1,5 +1,7 @@
-﻿using System;
-using TheSailOSProject.Games.Snake;
+﻿using System.Threading;
+using TheSailOSProject.Processes;
+using TheSailOSProject.Processes.Games;
+
 
 namespace TheSailOSProject.Commands.Games;
 
@@ -7,15 +9,14 @@ public class SnakeGameCommand : ICommand
 {
     public void Execute(string[] args)
     {
-        Console.Clear();
-        Console.WriteLine("Starting Snake Game...");
-        Console.WriteLine("Use arrow keys to move, ESC to exit");
-        Console.WriteLine("Press any key to start...");
-        Console.ReadKey(true);
+        var snakeProcess = new SnakeProcess();
+        ProcessManager.Register(snakeProcess);
+        ProcessManager.Start(snakeProcess);
 
-        var game = new SnakeGame();
-        game.Run();
-
-        Console.Clear();
+        while (snakeProcess.IsRunning)
+        {
+            ProcessManager.Update();
+            Thread.Sleep(100);
+        }
     }
 }

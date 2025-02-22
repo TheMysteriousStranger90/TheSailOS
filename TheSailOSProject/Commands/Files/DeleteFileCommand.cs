@@ -27,7 +27,7 @@ public class DeleteFileCommand : ICommand
         try
         {
             _currentDirectoryManager.ValidatePath(path);
-            _fileManager.DeleteFile(path);
+            _fileManager.DeleteFileTheSail(path);
             Console.WriteLine($"File deleted: {path}");
         }
         catch (ArgumentException ex)

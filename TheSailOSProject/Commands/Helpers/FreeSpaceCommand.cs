@@ -24,7 +24,7 @@ public class FreeSpaceCommand : ICommand
 
         try
         {
-            long freeSpace = _vfsManager.GetAvailableFreeSpace(drive);
+            long freeSpace = _vfsManager.GetAvailableFreeSpaceTheSail(drive);
             Console.WriteLine($"Available free space on drive {drive}: {freeSpace} bytes");
         }
         catch (Exception ex)

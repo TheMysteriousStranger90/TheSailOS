@@ -25,13 +25,12 @@ public class CommandProcessor
     private readonly Dictionary<string, ICommand> _commands;
     private readonly ICommandHistoryManager _historyManager;
     private readonly IAliasManager _aliasManager;
-    private readonly ILoginHandler _loginHandler;
 
     private List<string> _availableCommands = new List<string>
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers"
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "logout"
     };
 
     public CommandProcessor(
@@ -43,12 +42,13 @@ public class CommandProcessor
         IVFSManager vfsManager,
         IDiskManager diskManager,
         IAudioManager audioManager,
-        ILoginHandler loginHandler
+        ILoginHandler loginHandler,
+        ILogoutHandler logoutHandler
     )
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
-        _loginHandler = loginHandler ?? throw new ArgumentNullException(nameof(loginHandler));
+        //_loginHandler = loginHandler ?? throw new ArgumentNullException(nameof(loginHandler));
         _commands = new Dictionary<string, ICommand>
         {
             { "ls", new ListFilesCommand(fileManager, directoryManager, currentDirectoryManager) },
@@ -107,7 +107,8 @@ public class CommandProcessor
             { "tetris", new TetrisGameCommand() },
             { "tictactoe", new TicTacToeGameCommand() },
 
-            { "login", new LoginCommand(_loginHandler) },
+            { "login", new LoginCommand(loginHandler) },
+            { "logout", new LogoutCommand(logoutHandler) },
             { "createuser", new CreateUserCommand() },
             { "deleteuser", new DeleteUserCommand() },
             { "listusers", new ListUsersCommand() },
@@ -186,6 +187,7 @@ public class CommandProcessor
             { "time", "Shows the current time.\nUsage: time" },
             { "log", "Logs a message to the system log.\nUsage: log <message>" },
             { "login", "Logs in a user.\nUsage: login <username> <password>" },
+            { "logout", "Logs out the current user.\nUsage: logout" },
             { "createuser", "Creates a new user.\nUsage: createuser <username> <password>" },
             { "deleteuser", "Deletes a user.\nUsage: deleteuser <username>" },
             { "listusers", "Lists all users.\nUsage: listusers" },
@@ -273,7 +275,7 @@ Examples:
             //Application Commands
             { "APPLICATION COMMANDS", "The following commands are used to manage applications:" },
             { "calculator", "Opens the calculator application.\nUsage: calculator" },
-            { "textedit", "Opens the text editor application.\nUsage: edittext" }
+            { "textedit", "Opens the text editor application.\nUsage: textedit 0:\\test.txt" }
         };
     }
 }

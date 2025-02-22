@@ -38,7 +38,7 @@ public class DeleteDirectoryCommand : ICommand
             }
 
             _currentDirectoryManager.ValidatePath(path);
-            _directoryManager.DeleteDirectory(path);
+            _directoryManager.DeleteDirectoryTheSail(path);
             Console.WriteLine($"Directory deleted: {path}");
         }
         catch (Exception ex)

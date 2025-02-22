@@ -8,28 +8,29 @@ using TheSailOSProject.FileSystem;
 using TheSailOSProject.Hardware.Memory;
 using TheSailOSProject.Network;
 using TheSailOSProject.Processes;
+using TheSailOSProject.Session;
 using TheSailOSProject.Styles;
 using TheSailOSProject.Users;
 using Sys = Cosmos.System;
 
 namespace TheSailOSProject
 {
-    public class Kernel : Sys.Kernel, ILoginHandler
+    public class Kernel : Sys.Kernel, ILoginHandler, ILogoutHandler
     {
         private TheSailFileSystem _fileSystem;
         private CommandProcessor _commandProcessor;
         private User _loggedInUser = null;
+        private Session.Session _currentSession = null;
         private ICommandHistoryManager _historyManager;
-        private IAliasManager _aliasManager;
         private ICurrentDirectoryManager _currentDirectoryManager;
         private IRootDirectoryProvider _rootDirectoryProvider;
         private IAudioManager _audioManager;
-        
+
         protected override void BeforeRun()
         {
             ConsoleManager.Initialize();
             System.Threading.Thread.Sleep(100);
-            
+
             InitializeFileSystem();
             ConsoleManager.WriteLineColored("[FileSystem] System initialized", ConsoleStyle.Colors.Success);
 
@@ -41,7 +42,7 @@ namespace TheSailOSProject
 
             InitializeMemoryManager();
             ConsoleManager.WriteLineColored("[MemoryManager] System initialized", ConsoleStyle.Colors.Success);
-            
+
             InitializeNetwork();
             ConsoleManager.WriteLineColored("[Network] System initialized", ConsoleStyle.Colors.Success);
 
@@ -53,15 +54,29 @@ namespace TheSailOSProject
 
         protected override void Run()
         {
+            /*
+            var lastCleanup = System.DateTime.Now;
+            while (true)
+            {
+                if ((System.DateTime.Now - lastCleanup).TotalMinutes >= 5)
+                {
+                    SessionManager.CleanupInactiveSessions(TimeSpan.FromMinutes(30));
+                    lastCleanup = System.DateTime.Now;
+                }
+            */
+
             try
             {
-                if (_loggedInUser == null)
+                while (true)
                 {
-                    PromptLogin();
-                }
-                else
-                {
-                    ShowCommandPrompt();
+                    if (_loggedInUser == null)
+                    {
+                        PromptLogin();
+                    }
+                    else
+                    {
+                        ProcessUserSession();
+                    }
                 }
             }
             catch (Exception ex)
@@ -73,6 +88,23 @@ namespace TheSailOSProject
         protected override void OnBoot()
         {
             Sys.Global.Init(GetTextScreen(), true, true, true, true);
+        }
+
+        private void ProcessUserSession()
+        {
+            while (_loggedInUser != null)
+            {
+                ShowCommandPrompt();
+                var input = Console.ReadLine();
+
+                if (!string.IsNullOrEmpty(input))
+                {
+                    ProcessCommand(input);
+
+                    if (_loggedInUser == null)
+                        return;
+                }
+            }
         }
 
         private void PromptLogin()
@@ -100,18 +132,16 @@ namespace TheSailOSProject
 
         private void ShowCommandPrompt()
         {
-            ConsoleManager.WriteColored($"{_currentDirectoryManager.GetCurrentDirectory()}",
-                ConsoleStyle.Colors.Primary);
-            ConsoleManager.WriteColored(ConsoleStyle.Symbols.Prompt + " ", ConsoleStyle.Colors.Primary);
+            SessionManager.UpdateSessionActivity(_currentSession?.SessionId);
 
-            var input = Console.ReadLine();
-
-            if (!string.IsNullOrEmpty(input))
-            {
-                ProcessCommand(input);
-            }
-
-            ShowCommandPrompt();
+            ConsoleManager.WriteColored(
+                $"{_currentDirectoryManager.GetCurrentDirectory()}",
+                ConsoleStyle.Colors.Primary
+            );
+            ConsoleManager.WriteColored(
+                $"{ConsoleStyle.Symbols.Prompt} ",
+                ConsoleStyle.Colors.Primary
+            );
         }
 
         private void ProcessCommand(string input)
@@ -161,6 +191,7 @@ namespace TheSailOSProject
                 _fileSystem,
                 _fileSystem,
                 _audioManager,
+                this,
                 this
             );
         }
@@ -210,14 +241,14 @@ namespace TheSailOSProject
             ProcessManager.Start(memoryService);
             ProcessManager.Update();
         }
-        
+
         private void InitializeFtpServer()
         {
             Console.WriteLine("Initializing FTP Server...");
-            
+
             _rootDirectoryProvider = new RootDirectoryProvider();
             _currentDirectoryManager = new CurrentDirectoryManager(_rootDirectoryProvider.GetRootDirectory());
-            
+
             ConsoleManager.WriteLineColored("Starting FTP server...", ConsoleStyle.Colors.Primary);
 
             var ftpServer = new FtpServer(_fileSystem, _currentDirectoryManager.GetCurrentDirectory());
@@ -230,9 +261,29 @@ namespace TheSailOSProject
         public void OnLoginSuccess(User user)
         {
             _loggedInUser = user;
+            _currentSession = SessionManager.StartSession(user);
             ConsoleManager.WriteLineColored($"Welcome, {user.Username}!", ConsoleStyle.Colors.Success);
         }
-        
+
+        public void OnLogout()
+        {
+            if (_loggedInUser == null) return;
+
+            var sessionId = _currentSession?.SessionId;
+            if (!string.IsNullOrEmpty(sessionId))
+            {
+                SessionManager.EndSession(sessionId);
+                Console.WriteLine($"[Kernel] Session {sessionId} terminated");
+            }
+
+            _loggedInUser = null;
+            _currentSession = null;
+            Console.Clear();
+            ConsoleManager.WriteLineColored("Successfully logged out.", ConsoleStyle.Colors.Success);
+
+            Cosmos.Core.Memory.Heap.Collect();
+        }
+
         static void ShowErrorScreen(Exception ex)
         {
             Console.Clear();

@@ -9,7 +9,6 @@ namespace TheSailOSProject.Network;
 public static class NetworkManager
 {
     static DHCPClient _dhcpClient;
-    static NetworkDevice _networkDevice;
 
     public static void Initialize()
     {

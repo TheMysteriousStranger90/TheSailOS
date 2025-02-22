@@ -27,7 +27,7 @@ public class CreateDirectoryCommand : ICommand
         try
         {
             _currentDirectoryManager.ValidatePath(path);
-            _directoryManager.CreateDirectory(path);
+            _directoryManager.CreateDirectoryTheSail(path);
             Console.WriteLine($"Directory created: {path}");
         }
         catch (ArgumentException ex)
