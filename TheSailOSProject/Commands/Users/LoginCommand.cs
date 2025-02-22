@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using TheSailOSProject.Session;
 using TheSailOSProject.Styles;
 using TheSailOSProject.Users;
 
@@ -26,6 +28,19 @@ public class LoginCommand : ICommand
 
         if (UserManager.VerifyLogin(username, password, out User loggedInUser))
         {
+            var existingSessions = SessionManager.GetAllSessions()
+                .Where(s => s.User.Username == username)
+                .ToList();
+
+            if (existingSessions.Any())
+            {
+                ConsoleManager.WriteLineColored("Terminating existing sessions...", ConsoleStyle.Colors.Warning);
+                foreach (var session in existingSessions)
+                {
+                    SessionManager.EndSession(session.SessionId);
+                }
+            }
+            
             ConsoleManager.WriteLineColored($"Login successful for user: {username}", ConsoleStyle.Colors.Success);
             _loginHandler.OnLoginSuccess(loggedInUser);
         }

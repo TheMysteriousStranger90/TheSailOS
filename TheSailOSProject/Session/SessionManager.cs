@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TheSailOSProject.Users;
 
 namespace TheSailOSProject.Session
@@ -8,18 +9,19 @@ namespace TheSailOSProject.Session
     {
         private static Dictionary<string, Session> _activeSessions = new Dictionary<string, Session>();
         private static readonly object _sessionLock = new object();
+        private static int _sessionCounter;
 
         public static Session StartSession(User user)
         {
             lock (_sessionLock)
             {
-                string sessionId = Guid.NewGuid().ToString();
-
-                Session session = new Session(sessionId, user, System.DateTime.Now);
+                var timestamp = System.DateTime.Now.Ticks;
+                var sessionId = $"{user.Username}-{timestamp}-{++_sessionCounter}";
+            
+                var session = new Session(sessionId, user, System.DateTime.Now);
                 _activeSessions.Add(sessionId, session);
 
-                Console.WriteLine(
-                    $"[SessionManager] Session started for user: {user.Username}, Session ID: {sessionId}");
+                Console.WriteLine($"[Session] New session created: {sessionId}");
                 return session;
             }
         }
@@ -58,6 +60,30 @@ namespace TheSailOSProject.Session
                 {
                     session.LastActivity = System.DateTime.Now;
                     //Console.WriteLine($"[SessionManager] Session activity updated for Session ID: {sessionId}");
+                }
+            }
+        }
+        
+        public static List<Session> GetAllSessions()
+        {
+            lock (_sessionLock)
+            {
+                return _activeSessions.Values.ToList();
+            }
+        }
+        
+        public static void CleanupInactiveSessions(TimeSpan maxInactiveTime)
+        {
+            lock (_sessionLock)
+            {
+                var cutoff = System.DateTime.Now - maxInactiveTime;
+                var toRemove = _activeSessions.Values
+                    .Where(s => s.LastActivity < cutoff)
+                    .ToList();
+
+                foreach (var session in toRemove)
+                {
+                    EndSession(session.SessionId);
                 }
             }
         }

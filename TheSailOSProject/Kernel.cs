@@ -54,6 +54,17 @@ namespace TheSailOSProject
 
         protected override void Run()
         {
+            /*
+            var lastCleanup = System.DateTime.Now;
+            while (true)
+            {
+                if ((System.DateTime.Now - lastCleanup).TotalMinutes >= 5)
+                {
+                    SessionManager.CleanupInactiveSessions(TimeSpan.FromMinutes(30));
+                    lastCleanup = System.DateTime.Now;
+                }
+            */
+            
             try
             {
                 while (true)
@@ -258,11 +269,19 @@ namespace TheSailOSProject
         {
             if (_loggedInUser == null) return;
 
-            SessionManager.EndSession(_currentSession.SessionId);
+            var sessionId = _currentSession?.SessionId;
+            if (!string.IsNullOrEmpty(sessionId))
+            {
+                SessionManager.EndSession(sessionId);
+                Console.WriteLine($"[Kernel] Session {sessionId} terminated");
+            }
+            
             _loggedInUser = null;
             _currentSession = null;
             Console.Clear();
             ConsoleManager.WriteLineColored("Successfully logged out.", ConsoleStyle.Colors.Success);
+            
+            Cosmos.Core.Memory.Heap.Collect();
         }
         
         static void ShowErrorScreen(Exception ex)
