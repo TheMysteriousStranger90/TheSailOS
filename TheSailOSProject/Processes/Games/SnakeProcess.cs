@@ -2,7 +2,7 @@
 using TheSailOSProject.Games.Snake;
 using TheSailOSProject.Styles;
 
-namespace TheSailOSProject.Processes.Applications;
+namespace TheSailOSProject.Processes.Games;
 
 public class SnakeProcess : Process
 {

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading;
-using TheSailOSProject.Games.Snake;
+﻿using System.Threading;
 using TheSailOSProject.Processes;
-using TheSailOSProject.Processes.Applications;
+using TheSailOSProject.Processes.Games;
+
 
 namespace TheSailOSProject.Commands.Games;
 

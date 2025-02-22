@@ -273,7 +273,7 @@ Examples:
             //Application Commands
             { "APPLICATION COMMANDS", "The following commands are used to manage applications:" },
             { "calculator", "Opens the calculator application.\nUsage: calculator" },
-            { "textedit", "Opens the text editor application.\nUsage: edittext" }
+            { "textedit", "Opens the text editor application.\nUsage: textedit 0:\\test.txt" }
         };
     }
 }

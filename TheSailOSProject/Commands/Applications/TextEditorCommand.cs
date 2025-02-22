@@ -1,27 +1,37 @@
 ﻿using System;
-using TheSailOSProject.Applications;
+using System.Threading;
 using TheSailOSProject.FileSystem;
+using TheSailOSProject.Processes;
+using TheSailOSProject.Processes.Applications;
 
-namespace TheSailOSProject.Commands.Applications
+namespace TheSailOSProject.Commands.Applications;
+
+public class TextEditorCommand : ICommand
 {
-    public class TextEditorCommand : ICommand
+    private readonly IFileManager _fileManager;
+
+    public TextEditorCommand(IFileManager fileManager)
     {
-        private readonly IFileManager _fileManager;
+        _fileManager = fileManager ?? throw new ArgumentNullException(nameof(fileManager));
+    }
 
-        public TextEditorCommand(IFileManager fileManager)
-        {
-            _fileManager = fileManager ?? throw new ArgumentNullException(nameof(fileManager));
-        }
+    public void Execute(string[] args)
+    {
+        string filePath = args.Length > 0 ? args[0] : null;
 
-        public void Execute(string[] args)
-        {
-            string filePath = args.Length > 0 ? args[0] : null;
-            TextEditor.Run(filePath, _fileManager);
-        }
+        var editorProcess = new TextEditorProcess(filePath, _fileManager);
+        ProcessManager.Register(editorProcess);
+        ProcessManager.Start(editorProcess);
 
-        public string HelpText()
+        while (editorProcess.IsRunning)
         {
-            return "Opens the text editor application.\nUsage: edit <path>";
+            ProcessManager.Update();
+            Thread.Sleep(100);
         }
+    }
+
+    public string HelpText()
+    {
+        return "Opens the text editor application.\nUsage: textedit <path>";
     }
 }
