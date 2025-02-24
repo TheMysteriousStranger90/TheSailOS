@@ -72,6 +72,15 @@ public static class PermissionsManager
         File.WriteAllLines(PermissionsFile, lines);
     }
     
+    public static void RemoveFilePermissions(string filePath)
+    {
+        if (_filePermissions.ContainsKey(filePath))
+        {
+            _filePermissions.Remove(filePath);
+            SavePermissions();
+        }
+    }
+    
     public static FilePermissions GetFilePermissions(string filePath)
     {
         return _filePermissions.ContainsKey(filePath) ? _filePermissions[filePath] : null;
