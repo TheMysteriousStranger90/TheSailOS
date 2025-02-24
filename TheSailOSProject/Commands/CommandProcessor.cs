@@ -12,6 +12,7 @@ using TheSailOSProject.Commands.Games;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
+using TheSailOSProject.Commands.Permissions;
 using TheSailOSProject.Commands.Power;
 using TheSailOSProject.Commands.Processes;
 using TheSailOSProject.Commands.Users;
@@ -114,7 +115,9 @@ public class CommandProcessor
             { "listusers", new ListUsersCommand() },
 
             { "calculator", new CalculatorCommand() },
-            { "textedit", new TextEditorCommand(fileManager) }
+            { "textedit", new TextEditorCommand(fileManager) },
+            
+            { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) }
         };
     }
 

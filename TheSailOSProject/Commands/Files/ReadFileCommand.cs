@@ -1,6 +1,7 @@
 ﻿using System;
 using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.FileSystem;
+using TheSailOSProject.Permissions;
 
 namespace TheSailOSProject.Commands.Files;
 
@@ -24,9 +25,19 @@ public class ReadFileCommand : ICommand
         }
 
         string path = _currentDirectoryManager.CombinePath(_currentDirectoryManager.GetCurrentDirectory(), args[0]);
+        
         try
         {
             _currentDirectoryManager.ValidatePath(path);
+            
+            var currentUser = Kernel.CurrentUser;
+            
+            if (!PermissionsManager.CanReadFile(path, currentUser))
+            {
+                Console.WriteLine("Access denied: You don't have permission to read this file.");
+                return;
+            }
+
             string content = _fileManager.ReadFile(path);
             if (content != null)
             {
@@ -37,10 +48,6 @@ public class ReadFileCommand : ICommand
                     Console.WriteLine(line);
                 }
             }
-        }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine($"Error reading file: {ex.Message}");
         }
         catch (Exception ex)
         {
