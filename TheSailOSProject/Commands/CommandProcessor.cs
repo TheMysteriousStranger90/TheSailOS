@@ -31,7 +31,11 @@ public class CommandProcessor
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "logout"
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "logout",
+        "netshutdown", "netconfig", "netstatus", "tcpserver", "tcpclient", "udpserver", "udpclient",
+        "cpu", "processinfo", "date", "time", "format", "partition", "partinfo", "partman",
+        "playaudio", "stopaudio", "snake", "tetris", "tictactoe", "calculator", "textedit",
+        "permissions", "setpermissions"
     };
 
     public CommandProcessor(
