@@ -3,8 +3,72 @@
     color: #D8BFD8;
 }
 
+/* Table Styling */
+.md-typeset table:not([class]) {
+    background-color: #1E1E1E;
+    border-radius: 4px;
+}
+
+.md-typeset table:not([class]) th {
+    background-color: #2A2A2A;
+    color: #E0B0FF;
+    border-bottom: 2px solid #8B008B;
+}
+
+.md-typeset table:not([class]) tr:hover {
+    background-color: #2A2A2A;
+}
+
+/* Blockquotes */
+.md-typeset blockquote {
+    border-left: 4px solid #8B008B;
+    background-color: #1E1E1E;
+    padding: 10px 15px;
+    margin-left: 0;
+    color: #D8BFD8;
+}
+
+
+
+
+
+
+.md-typeset .admonition {
+    border-left: 4px solid #8B008B;
+    background-color: #1E1E1E;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.md-typeset .admonition-title {
+    background-color: #2A2A2A;
+    color: #E0B0FF;
+}
+
+a, .md-nav__link {
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+a:hover, .md-nav__link:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}
+
+/* Focus effects for better accessibility */
+a:focus, button:focus, .md-nav__link:focus {
+    outline: 2px solid #8B008B;
+    outline-offset: 2px;
+}
+
 .md-typeset h1 {
     color: #8B008B !important;
+}
+
+.md-typeset h2 {
+    background-color: #1E1E1E;
+    padding: 10px 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border-left: 4px solid #8B008B;
 }
 
 .md-header {
@@ -45,4 +109,15 @@ html {
 
 .md-nav__link--active {
     color: #E0B0FF !important;
+}
+
+@media screen and (max-width: 76.1875em) {
+    .md-nav--primary .md-nav__title {
+        background-color: #212121;
+        color: #E0B0FF;
+    }
+
+    .md-nav--primary .md-nav__item {
+        border-top: 1px solid #2A2A2A;
+    }
 }
