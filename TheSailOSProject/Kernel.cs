@@ -7,6 +7,7 @@ using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Hardware.Memory;
 using TheSailOSProject.Network;
+using TheSailOSProject.Permissions;
 using TheSailOSProject.Processes;
 using TheSailOSProject.Session;
 using TheSailOSProject.Styles;
@@ -25,6 +26,8 @@ namespace TheSailOSProject
         private ICurrentDirectoryManager _currentDirectoryManager;
         private IRootDirectoryProvider _rootDirectoryProvider;
         private IAudioManager _audioManager;
+        
+        public static User CurrentUser { get; private set; }
 
         protected override void BeforeRun()
         {
@@ -33,6 +36,9 @@ namespace TheSailOSProject
 
             InitializeFileSystem();
             ConsoleManager.WriteLineColored("[FileSystem] System initialized", ConsoleStyle.Colors.Success);
+            
+            PermissionsManager.Initialize();
+            ConsoleManager.WriteLineColored("[Permissions] System initialized", ConsoleStyle.Colors.Success);
 
             InitializeProcessManager();
             ConsoleManager.WriteLineColored("[ProcessManager] System initialized", ConsoleStyle.Colors.Success);
@@ -261,6 +267,7 @@ namespace TheSailOSProject
         public void OnLoginSuccess(User user)
         {
             _loggedInUser = user;
+            CurrentUser = user;
             _currentSession = SessionManager.StartSession(user);
             ConsoleManager.WriteLineColored($"Welcome, {user.Username}!", ConsoleStyle.Colors.Success);
         }
@@ -277,6 +284,7 @@ namespace TheSailOSProject
             }
 
             _loggedInUser = null;
+            CurrentUser = null;
             _currentSession = null;
             Console.Clear();
             ConsoleManager.WriteLineColored("Successfully logged out.", ConsoleStyle.Colors.Success);

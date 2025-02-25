@@ -12,6 +12,7 @@ using TheSailOSProject.Commands.Games;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
+using TheSailOSProject.Commands.Permissions;
 using TheSailOSProject.Commands.Power;
 using TheSailOSProject.Commands.Processes;
 using TheSailOSProject.Commands.Users;
@@ -30,7 +31,11 @@ public class CommandProcessor
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "logout"
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "logout",
+        "netshutdown", "netconfig", "netstatus", "tcpserver", "tcpclient", "udpserver", "udpclient",
+        "cpu", "processinfo", "date", "time", "format", "partition", "partinfo", "partman",
+        "playaudio", "stopaudio", "snake", "tetris", "tictactoe", "calculator", "textedit",
+        "permissions", "setpermissions"
     };
 
     public CommandProcessor(
@@ -48,7 +53,6 @@ public class CommandProcessor
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
-        //_loginHandler = loginHandler ?? throw new ArgumentNullException(nameof(loginHandler));
         _commands = new Dictionary<string, ICommand>
         {
             { "ls", new ListFilesCommand(fileManager, directoryManager, currentDirectoryManager) },
@@ -114,7 +118,10 @@ public class CommandProcessor
             { "listusers", new ListUsersCommand() },
 
             { "calculator", new CalculatorCommand() },
-            { "textedit", new TextEditorCommand(fileManager) }
+            { "textedit", new TextEditorCommand(fileManager) },
+            
+            { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) },
+            { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) }
         };
     }
 
@@ -170,6 +177,11 @@ public class CommandProcessor
             { "copy", "Copies a file from source to destination.\nUsage: copy <source> <destination>" },
             { "move", "Moves a file from source to destination.\nUsage: move <source> <destination>" },
             { "rename", "Renames a file.\nUsage: rename <oldPath> <newName>" },
+            
+            // Permissions Commands
+            { "PERMISSIONS COMMANDS", "The following commands are used to manage file permissions:" },
+            { "permissions", "Shows the permissions of a file.\nUsage: permissions <path>" },
+            { "setpermissions", "Sets the permissions of a file.\nUsage: setpermissions <path> <username> <allowRead> <allowWrite>" },
 
             // History Commands
             { "HISTORY COMMANDS", "The following commands are used to manage command history:" },

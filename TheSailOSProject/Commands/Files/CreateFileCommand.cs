@@ -1,6 +1,7 @@
 ﻿using System;
 using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.FileSystem;
+using TheSailOSProject.Permissions;
 
 namespace TheSailOSProject.Commands.Files;
 
@@ -27,12 +28,19 @@ public class CreateFileCommand : ICommand
         try
         {
             _currentDirectoryManager.ValidatePath(path);
+            
+            var currentUser = Kernel.CurrentUser;
+            if (currentUser == null)
+            {
+                Console.WriteLine("Error: No user logged in");
+                return;
+            }
+
             _fileManager.CreateFileTheSail(path);
+            
+            PermissionsManager.SetFilePermissions(path, currentUser.Username, true, true);
+            
             Console.WriteLine($"File created: {path}");
-        }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine($"Error creating file: {ex.Message}");
         }
         catch (Exception ex)
         {
