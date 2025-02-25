@@ -66,7 +66,7 @@ public static class ConsoleManager
         
         Console.ForegroundColor = ConsoleColor.White;
         Console.SetCursorPosition((Console.WindowWidth - 25) / 2, lineY + 1);
-        Console.WriteLine($"TheSailOS v0.0.1 - {System.DateTime.Now.Year}");
+        Console.WriteLine($"TheSailOS v0.0.2 - {System.DateTime.Now.Year}");
 
         DrawHorizontalLine(lineY + 2);
         Console.WriteLine();

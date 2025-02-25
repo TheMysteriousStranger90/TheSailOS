@@ -49,7 +49,6 @@ public class CommandProcessor
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
-        //_loginHandler = loginHandler ?? throw new ArgumentNullException(nameof(loginHandler));
         _commands = new Dictionary<string, ICommand>
         {
             { "ls", new ListFilesCommand(fileManager, directoryManager, currentDirectoryManager) },
@@ -117,7 +116,8 @@ public class CommandProcessor
             { "calculator", new CalculatorCommand() },
             { "textedit", new TextEditorCommand(fileManager) },
             
-            { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) }
+            { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) },
+            { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) }
         };
     }
 
@@ -173,6 +173,11 @@ public class CommandProcessor
             { "copy", "Copies a file from source to destination.\nUsage: copy <source> <destination>" },
             { "move", "Moves a file from source to destination.\nUsage: move <source> <destination>" },
             { "rename", "Renames a file.\nUsage: rename <oldPath> <newName>" },
+            
+            // Permissions Commands
+            { "PERMISSIONS COMMANDS", "The following commands are used to manage file permissions:" },
+            { "permissions", "Shows the permissions of a file.\nUsage: permissions <path>" },
+            { "setpermissions", "Sets the permissions of a file.\nUsage: setpermissions <path> <username> <allowRead> <allowWrite>" },
 
             // History Commands
             { "HISTORY COMMANDS", "The following commands are used to manage command history:" },

@@ -13,6 +13,13 @@ TheSailOS is an operating system built using C# and the Cosmos (C# Open Source M
     - Support for file and directory operations (create, delete, read, write, copy, move, rename)
     - Disk management (format, partition, list partitions)
 
+- **Permissions System:**
+    - File ownership tracking
+    - Read/Write access control
+    - Administrator override capabilities
+    - Permission management commands (`permissions`, `setpermissions`)
+    - User-based access restrictions
+
 - **Networking:**
     - TCP/IP stack
     - DNS resolution
@@ -41,9 +48,9 @@ TheSailOS is an operating system built using C# and the Cosmos (C# Open Source M
 - **Audio:**
     - Audio playback support
 
-## Important Note: Version 0.0.1 - Alpha Stage
+## Important Note: Version 0.0.2 - Alpha Stage
 
-This is an early alpha release (version 0.0.1) of TheSailOS. As such, it is not feature-complete and may contain bugs, unstable components, and unimplemented features. Use with caution and be aware that data loss or system instability may occur.
+This is an early alpha release (version 0.0.2) of TheSailOS. As such, it is not feature-complete and may contain bugs, unstable components, and unimplemented features. Use with caution and be aware that data loss or system instability may occur.
 
 ## Default Credentials
 
