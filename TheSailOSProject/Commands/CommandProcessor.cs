@@ -139,7 +139,7 @@ public class CommandProcessor
     {
         input = input?.Trim();
         if (string.IsNullOrEmpty(input)) return;
-
+        DisplayWithSyntaxHighlighting(input);
         _historyManager.AddCommand(input);
 
         var parts = input.Split(' ');
@@ -246,6 +246,72 @@ public class CommandProcessor
         {
             ConsoleManager.WriteLineColored($"Unknown command: {commandName}", ConsoleStyle.Colors.Error);
         }
+    }
+    
+    public void DisplayWithSyntaxHighlighting(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return;
+
+        string[] parts = input.Split(' ');
+        if (parts.Length == 0)
+            return;
+        
+        string commandName = parts[0].ToLower();
+        if (_commands.ContainsKey(commandName) || _availableCommands.Contains(commandName))
+        {
+            ConsoleManager.WriteColored(commandName, ConsoleStyle.Colors.Command);
+        }
+        else
+        {
+            Console.Write(commandName);
+        }
+        
+        for (int i = 1; i < parts.Length; i++)
+        {
+            Console.Write(" ");
+            HighlightArgument(parts[i]);
+        }
+
+        Console.WriteLine();
+    }
+
+    private void HighlightArgument(string arg)
+    {
+        if (arg.StartsWith("-") || arg.StartsWith("/"))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.Flag);
+        }
+        else if (int.TryParse(arg, out _) || double.TryParse(arg, out _))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.Number);
+        }
+        else if (IsLikelyFilePath(arg))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.FilePath);
+        }
+        else if ((arg.StartsWith("\"") && arg.EndsWith("\"")) ||
+                 (arg.StartsWith("'") && arg.EndsWith("'")))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.String);
+        }
+        else
+        {
+            Console.Write(arg);
+        }
+    }
+
+    private bool IsLikelyFilePath(string arg)
+    {
+        return arg.Contains(":\\") ||
+               arg.Contains("/") ||
+               arg.Contains("\\") ||
+               arg.EndsWith(".txt") ||
+               arg.EndsWith(".cs") ||
+               arg.EndsWith(".exe") ||
+               arg.EndsWith(".dll") ||
+               arg.EndsWith(".cfg") ||
+               arg.EndsWith(".log");
     }
 
     private Dictionary<string, string> GetHelpTexts()
