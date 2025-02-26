@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using TheSailOSProject.Logging;
 using TheSailOSProject.Session;
 using TheSailOSProject.Styles;
 using TheSailOSProject.Users;
@@ -46,6 +47,9 @@ public class LoginCommand : ICommand
         }
         else
         {
+            Log.WriteLog(LogPriority.Warning, "Authentication", 
+                $"Failed login attempt for user '{username}'", "SYSTEM");
+            
             ConsoleManager.WriteLineColored("Login failed. Invalid username or password.", ConsoleStyle.Colors.Error);
         }
     }

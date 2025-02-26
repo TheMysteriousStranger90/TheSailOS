@@ -10,6 +10,7 @@ using TheSailOSProject.Commands.Disk;
 using TheSailOSProject.Commands.Files;
 using TheSailOSProject.Commands.Games;
 using TheSailOSProject.Commands.Helpers;
+using TheSailOSProject.Commands.Logging;
 using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
 using TheSailOSProject.Commands.Permissions;
@@ -127,6 +128,8 @@ public class CommandProcessor
             { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) },
             
             { "find", new FindCommand(fileSearchService) },
+            
+            { "log", new LogCommand() },
         };
     }
 

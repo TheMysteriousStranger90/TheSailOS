@@ -6,6 +6,7 @@ using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Hardware.Memory;
+using TheSailOSProject.Logging;
 using TheSailOSProject.Network;
 using TheSailOSProject.Permissions;
 using TheSailOSProject.Processes;
@@ -56,6 +57,10 @@ namespace TheSailOSProject
             ConsoleManager.WriteLineColored("[CommandProcessor] System initialized", ConsoleStyle.Colors.Success);
 
             UserManager.Initialize();
+            ConsoleManager.WriteLineColored("[UserManager] System initialized", ConsoleStyle.Colors.Success);
+            
+            Log.Initialize();
+            ConsoleManager.WriteLineColored("[Logging] System initialized", ConsoleStyle.Colors.Success);
         }
 
         protected override void Run()
@@ -269,6 +274,7 @@ namespace TheSailOSProject
             _loggedInUser = user;
             CurrentUser = user;
             _currentSession = SessionManager.StartSession(user);
+            Log.WriteLog(LogPriority.Info, "Authentication", $"User '{user.Username}' logged in successfully", "SYSTEM");
             ConsoleManager.WriteLineColored($"Welcome, {user.Username}!", ConsoleStyle.Colors.Success);
         }
 
@@ -279,6 +285,9 @@ namespace TheSailOSProject
             var sessionId = _currentSession?.SessionId;
             if (!string.IsNullOrEmpty(sessionId))
             {
+                Log.WriteLog(LogPriority.Info, "Authentication", 
+                    $"Session {sessionId} terminated for user '{CurrentUser.Username}'", "SYSTEM");
+                
                 SessionManager.EndSession(sessionId);
                 Console.WriteLine($"[Kernel] Session {sessionId} terminated");
             }
@@ -287,6 +296,7 @@ namespace TheSailOSProject
             CurrentUser = null;
             _currentSession = null;
             Console.Clear();
+            
             ConsoleManager.WriteLineColored("Successfully logged out.", ConsoleStyle.Colors.Success);
 
             Cosmos.Core.Memory.Heap.Collect();
