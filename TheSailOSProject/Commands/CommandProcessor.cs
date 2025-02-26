@@ -15,6 +15,7 @@ using TheSailOSProject.Commands.Network;
 using TheSailOSProject.Commands.Permissions;
 using TheSailOSProject.Commands.Power;
 using TheSailOSProject.Commands.Processes;
+using TheSailOSProject.Commands.Search;
 using TheSailOSProject.Commands.Users;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Users;
@@ -35,7 +36,7 @@ public class CommandProcessor
         "netshutdown", "netconfig", "netstatus", "tcpserver", "tcpclient", "udpserver", "udpclient",
         "cpu", "processinfo", "date", "time", "format", "partition", "partinfo", "partman",
         "playaudio", "stopaudio", "snake", "tetris", "tictactoe", "calculator", "textedit",
-        "permissions", "setpermissions"
+        "permissions", "setpermissions", "find", "grep"
     };
 
     public CommandProcessor(
@@ -53,6 +54,8 @@ public class CommandProcessor
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
+        
+        var fileSearchService = new FileSearchService(fileManager, directoryManager);
         _commands = new Dictionary<string, ICommand>
         {
             { "ls", new ListFilesCommand(fileManager, directoryManager, currentDirectoryManager) },
@@ -121,7 +124,9 @@ public class CommandProcessor
             { "textedit", new TextEditorCommand(fileManager) },
             
             { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) },
-            { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) }
+            { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) },
+            
+            { "find", new FindCommand(fileSearchService) },
         };
     }
 
@@ -284,10 +289,14 @@ Examples:
             { "tetris", "Play Tetris game.\nUse arrow keys to move, ESC to exit." },
             { "tictactoe", "Play Tic-Tac-Toe against the computer.\nUse numpad (1-9) to place X." },
 
-            //Application Commands
+            // Application Commands
             { "APPLICATION COMMANDS", "The following commands are used to manage applications:" },
             { "calculator", "Opens the calculator application.\nUsage: calculator" },
-            { "textedit", "Opens the text editor application.\nUsage: textedit 0:\\test.txt" }
+            { "textedit", "Opens the text editor application.\nUsage: textedit 0:\\test.txt" },
+            
+            // Search Commands
+            { "FILE SEARCH COMMANDS", "The following commands are used to search files and content:" },
+            { "find", "Finds files matching a specified pattern.\nUsage: find <pattern> [path] [-r]\n  -r: Search recursively through subdirectories\nExamples:\n  find\n  find *.cs 0:\\System -r" },
         };
     }
 }

@@ -12,47 +12,122 @@ namespace TheSailOSProject.Users
         private const string UsersDirectory = @"0:\System\Users";
         private const string UsersFile = @"0:\System\Users\usersthesail.dat";
         private static List<User> _users = new List<User>();
+        private static bool _isInitialized = false;
 
         public static void Initialize()
         {
-            if (!Directory.Exists(UsersDirectory))
+            Console.WriteLine("[INFO] Initializing UserManager...");
+            
+            try
             {
-                Directory.CreateDirectory(UsersDirectory);
-            }
+                if (!Directory.Exists(UsersDirectory))
+                {
+                    Console.WriteLine($"[INFO] Creating users directory: {UsersDirectory}");
+                    try
+                    {
+                        Directory.CreateDirectory(UsersDirectory);
+                        Console.WriteLine("[INFO] Users directory created successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ERROR] Failed to create users directory: {ex.Message}");
+                        Console.WriteLine($"[ERROR] Exception type: {ex.GetType().Name}");
 
-            if (!File.Exists(UsersFile))
+                        _users = new List<User>();
+                        CreateDefaultAdminUser(false);
+                        _isInitialized = true;
+                        return;
+                    }
+                }
+                
+                Console.WriteLine($"[INFO] Checking for users file: {UsersFile}");
+                bool fileExists = false;
+                try
+                {
+                    fileExists = File.Exists(UsersFile);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Error checking for users file: {ex.Message}");
+                }
+                
+                if (!fileExists)
+                {
+                    Console.WriteLine("[INFO] Users file not found, creating default admin user");
+                    CreateDefaultAdminUser(true);
+                }
+                else
+                {
+                    Console.WriteLine("[INFO] Users file found, loading users");
+                    LoadUsers();
+                }
+                
+                _isInitialized = true;
+                Console.WriteLine("[INFO] UserManager initialized successfully");
+            }
+            catch (Exception ex)
             {
-                CreateDefaultAdminUser();
+                Console.WriteLine($"[ERROR] UserManager initialization failed: {ex.Message}");
+                Console.WriteLine($"[ERROR] Exception type: {ex.GetType().Name}");
+                _users = new List<User>();
+                CreateDefaultAdminUser(false);
+                _isInitialized = true;
             }
-
-            LoadUsers();
         }
 
-        private static void CreateDefaultAdminUser()
+        private static void CreateDefaultAdminUser(bool saveToFile = true)
         {
-            string adminPasswordHash = SHA256.Hash("admin");
-            User admin = new User("admin", adminPasswordHash, UserType.Administrator);
-            _users.Add(admin);
-            SaveUsers();
+            Console.WriteLine("[INFO] Creating default admin user");
+            try
+            {
+                string adminPasswordHash = SHA256.Hash("admin");
+                User admin = new User("admin", adminPasswordHash, UserType.Administrator);
+                _users.Add(admin);
+                
+                if (saveToFile)
+                {
+                    SaveUsers();
+                }
+                else
+                {
+                    Console.WriteLine("[INFO] Default admin user created in memory only");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to create default admin user: {ex.Message}");
+            }
         }
 
         public static bool CreateUser(string username, string password, string type)
         {
+            EnsureInitialized();
+            
             if (GetUser(username) != null)
             {
                 ConsoleManager.WriteLineColored($"User {username} already exists.", ConsoleStyle.Colors.Error);
                 return false;
             }
 
-            string passwordHash = SHA256.Hash(password);
-            User newUser = new User(username, passwordHash, type);
-            _users.Add(newUser);
-            SaveUsers();
-            return true;
+            try
+            {
+                string passwordHash = SHA256.Hash(password);
+                User newUser = new User(username, passwordHash, type);
+                _users.Add(newUser);
+                SaveUsers();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ConsoleManager.WriteLineColored($"Failed to create user: {ex.Message}", ConsoleStyle.Colors.Error);
+                return false;
+            }
         }
 
         public static User GetUser(string username)
         {
+            EnsureInitialized();
+            
             foreach (var user in _users)
             {
                 if (user.Username.Equals(username))
@@ -66,6 +141,8 @@ namespace TheSailOSProject.Users
 
         public static bool VerifyLogin(string username, string password, out User loggedInUser)
         {
+            EnsureInitialized();
+            
             User user = GetUser(username);
             if (user != null && user.VerifyPassword(password))
             {
@@ -79,6 +156,8 @@ namespace TheSailOSProject.Users
 
         public static bool DeleteUser(string username)
         {
+            EnsureInitialized();
+            
             User userToDelete = GetUser(username);
             if (userToDelete == null)
             {
@@ -86,13 +165,23 @@ namespace TheSailOSProject.Users
                 return false;
             }
 
-            _users.Remove(userToDelete);
-            SaveUsers();
-            return true;
+            try
+            {
+                _users.Remove(userToDelete);
+                SaveUsers();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ConsoleManager.WriteLineColored($"Failed to delete user: {ex.Message}", ConsoleStyle.Colors.Error);
+                return false;
+            }
         }
 
         public static List<User> GetAllUsers()
         {
+            EnsureInitialized();
+            
             return _users.ToList();
         }
 
@@ -118,15 +207,26 @@ namespace TheSailOSProject.Users
                         }
                         else
                         {
-                            ConsoleManager.WriteLineColored($"Invalid user data in users file: {line}",
-                                ConsoleStyle.Colors.Warning);
+                            Console.WriteLine($"[WARNING] Invalid user data in users file: {line}");
                         }
                     }
+                    
+                    Console.WriteLine($"[INFO] Loaded {_users.Count} users from file");
+                }
+                else
+                {
+                    Console.WriteLine("[WARNING] Users file not found during load");
                 }
             }
             catch (Exception ex)
             {
-                ConsoleManager.WriteLineColored($"Error loading users: {ex.Message}", ConsoleStyle.Colors.Error);
+                Console.WriteLine($"[ERROR] Error loading users: {ex.Message}");
+                Console.WriteLine("[INFO] Creating default admin user after load failure");
+                
+                if (!_users.Any(u => u.Username == "admin" && u.Type == UserType.Administrator))
+                {
+                    CreateDefaultAdminUser(false);
+                }
             }
         }
 
@@ -139,12 +239,27 @@ namespace TheSailOSProject.Users
                 {
                     lines.Add($"{user.Username}:{user.PasswordHash}:{user.Type}");
                 }
+                
+                string directory = Path.GetDirectoryName(UsersFile);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
 
                 File.WriteAllLines(UsersFile, lines.ToArray());
+                Console.WriteLine($"[INFO] Saved {lines.Count} users to file");
             }
             catch (Exception ex)
             {
-                ConsoleManager.WriteLineColored($"Error saving users: {ex.Message}", ConsoleStyle.Colors.Error);
+                Console.WriteLine($"[ERROR] Error saving users: {ex.Message}");
+            }
+        }
+        
+        private static void EnsureInitialized()
+        {
+            if (!_isInitialized)
+            {
+                Initialize();
             }
         }
     }
