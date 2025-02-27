@@ -133,7 +133,7 @@ public class CommandProcessor
             { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) },
             { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) },
 
-            { "find", new FindCommand(fileSearchService) },
+            { "find", new FileSearchCommands(fileSearchService) },
 
             { "log", new LogCommand() },
             
@@ -319,7 +319,7 @@ public class CommandProcessor
                arg.EndsWith(".cfg") ||
                arg.EndsWith(".log");
     }
-
+    
     private Dictionary<string, string> GetHelpTexts()
     {
         return new Dictionary<string, string>
@@ -365,9 +365,8 @@ public class CommandProcessor
             { "date", "Shows the current date.\nUsage: date" },
             { "time", "Shows the current time.\nUsage: time" },
             { "log", "Logs a message to the system log.\nUsage: log <message>" },
-            { "login", "Logs in a user.\nUsage: login <username> <password>" },
             { "logout", "Logs out the current user.\nUsage: logout" },
-            { "changepassword", "Changes the password of the current user.\nUsage: changePassword" },
+            { "changepassword", "Changes the password of the current user.\nUsage: changepassword" },
             { "changeusername", "Changes your username.\n" +
                                 "Usage: changeusername <new_username>\n" +
                                 "Note: Your home directory contents will be moved to the new username location." },

@@ -3,7 +3,7 @@ using TheSailOSProject.FileSystem;
 
 namespace TheSailOSProject.Commands.Search
 {
-    public class FileSearchCommands
+    public class FileSearchCommands : ICommand
     {
         private readonly FileSearchService _searchService;
 
@@ -12,7 +12,7 @@ namespace TheSailOSProject.Commands.Search
             _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         }
 
-        public void ExecuteFindCommand(string[] args)
+        public void Execute(string[] args)
         {
             if (args.Length < 1)
             {
