@@ -28,7 +28,7 @@ namespace TheSailOSProject
         private IRootDirectoryProvider _rootDirectoryProvider;
         private IAudioManager _audioManager;
 
-        public static User CurrentUser { get; private set; }
+        public static User CurrentUser { get; set; }
 
         protected override void BeforeRun()
         {

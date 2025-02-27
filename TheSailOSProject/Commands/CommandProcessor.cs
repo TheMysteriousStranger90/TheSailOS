@@ -122,6 +122,10 @@ public class CommandProcessor
             { "createuser", new CreateUserCommand() },
             { "deleteuser", new DeleteUserCommand() },
             { "listusers", new ListUsersCommand() },
+            { "useradmin", new UserAdminCommand() },
+            { "userinfo", new UserInfoCommand() },
+            { "changepassword", new ChangePasswordCommand() },
+            { "changeusername", new ChangeUsernameCommand() },
 
             { "calculator", new CalculatorCommand() },
             { "textedit", new TextEditorCommand(fileManager) },
@@ -132,6 +136,8 @@ public class CommandProcessor
             { "find", new FindCommand(fileSearchService) },
 
             { "log", new LogCommand() },
+            
+
         };
     }
 
@@ -361,9 +367,22 @@ public class CommandProcessor
             { "log", "Logs a message to the system log.\nUsage: log <message>" },
             { "login", "Logs in a user.\nUsage: login <username> <password>" },
             { "logout", "Logs out the current user.\nUsage: logout" },
+            { "changepassword", "Changes the password of the current user.\nUsage: changePassword" },
+            { "changeusername", "Changes your username.\n" +
+                                "Usage: changeusername <new_username>\n" +
+                                "Note: Your home directory contents will be moved to the new username location." },
             { "createuser", "Creates a new user.\nUsage: createuser <username> <password>" },
             { "deleteuser", "Deletes a user.\nUsage: deleteuser <username>" },
             { "listusers", "Lists all users.\nUsage: listusers" },
+            { "useradmin", "Manages administrator privileges for users.\n" +
+                           "Usage:\n" +
+                           "  useradmin grant <username>  - Grant administrator privileges\n" +
+                           "  useradmin revoke <username> - Revoke administrator privileges\n" +
+                           "Note: Only administrators can use this command." },
+            { "userinfo", "Displays information about a user.\n" +
+                          "Usage:\n" +
+                          "  userinfo             - Show information about current user\n" +
+                          "  userinfo <username>  - Show information about a specific user (admin only)" },
 
             // Network Commands
             { "NETWORK COMMANDS", "The following commands are used to manage the network:" },
