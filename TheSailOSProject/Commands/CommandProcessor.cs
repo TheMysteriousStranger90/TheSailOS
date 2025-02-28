@@ -93,7 +93,6 @@ public class CommandProcessor
             { "tcpclient", new TcpClientCommand() },
             { "udpserver", new UdpServerCommand() },
             { "udpclient", new UdpClientCommand() },
-            //{ "httpget", new HttpGetCommand() },
 
             { "memory", new MemoryCommand() },
             { "cpu", new CPUCommand() },
