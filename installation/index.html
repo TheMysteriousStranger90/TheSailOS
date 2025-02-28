@@ -371,7 +371,7 @@
 <ol>
 <li>
 <p><strong>Download TheSailOSProject.iso:</strong></p>
-<p>Download the latest ISO image of TheSailOS. This ISO image contains the operating system and is required to create a virtual machine.</p>
+<p><a href="https://github.com/TheMysteriousStranger90/TheSailOS/releases/download/v0.0.3/TheSailOSProject.iso">Download</a> the latest ISO image of TheSailOS. This ISO image contains the operating system and is required to create a virtual machine.</p>
 </li>
 <li>
 <p><strong>Install VMware Workstation (or another virtualization software):</strong></p>
@@ -382,26 +382,72 @@
 <ul>
 <li>Open VMware Workstation.</li>
 <li>Click on "Create a New Virtual Machine".</li>
-<li>Select "Custom (advanced)" and click "Next".</li>
-<li>Choose the hardware compatibility (the latest version is usually fine) and click "Next".</li>
-<li>Select "Installer disc image file (ISO)" and browse to the <code>TheSailOSProject.iso</code> file you downloaded in step 1. Click "Next".</li>
-<li>Choose "Other" as the guest operating system. Click "Next".</li>
-<li>Give your virtual machine a name (e.g., "TheSailOS") and choose a location to store the virtual machine files. Click "Next".</li>
+<li>Select "Custom (advanced)" and click "Next".
+    <img alt="Screen1" src="../assets/images/installation/Screen%281%29.png" /></li>
+<li>Choose the hardware compatibility (the latest version is usually fine) and click "Next".
+    <img alt="Screen2" src="../assets/images/installation/Screen%282%29.png" /></li>
+<li>Select "Installer disc image file (ISO)" and browse to the <code>TheSailOSProject.iso</code> file you downloaded in step 1. Click "Next".
+    <img alt="Screen3" src="../assets/images/installation/Screen%283%29.png" /></li>
+<li>Choose "Other" as the guest operating system. Click "Next".
+    <img alt="Screen4" src="../assets/images/installation/Screen%284%29.png" /></li>
+<li>Give your virtual machine a name (e.g., "TheSailOS") and choose a location to store the virtual machine files. Click "Next".
+    <img alt="Screen5" src="../assets/images/installation/Screen%285%29.png" /></li>
 </ul>
 </li>
 <li>
 <p><strong>Configure Virtual Machine Settings (Example):</strong></p>
 <ul>
-<li><strong>Memory:</strong> Set the memory to 256 MB. This is a minimum recommended value for TheSailOS.</li>
-<li><strong>Processors:</strong> Use 1 processor.</li>
-<li><strong>Hard Disk:</strong> Create a new virtual hard disk with a size of 512 MB. Choose "Store virtual disk as a single file".</li>
+<li><strong>Processors:</strong> Use 1 processor.
+    <img alt="Screen6" src="../assets/images/installation/Screen%286%29.png" /></li>
+<li><strong>Memory:</strong> Set the memory to 256 MB. This is a minimum recommended value for TheSailOS.
+    <img alt="Screen7" src="../assets/images/installation/Screen%287%29.png" /></li>
+<li><strong>Network Adapter:</strong> Choose "Bridged" or "NAT" depending on your network configuration.
+    <img alt="Screen8" src="../assets/images/installation/Screen%288%29.png" /></li>
+<li><strong>I/O Controller:</strong> Choose "LSI Logic" or "BusLogic".
+    <img alt="Screen9" src="../assets/images/installation/Screen%289%29.png" /></li>
+<li><strong>Virtual Disk Type:</strong> Choose "IDE".
+    <img alt="Screen10" src="../assets/images/installation/Screen%2810%29.png" /></li>
+<li><strong>Use an existing virtual disk:</strong> Browse to the location.
+   <img alt="Screen11" src="../assets/images/installation/Screen%2811%29.png" /></li>
+<li><strong>Example:</strong> Use the pre-prepared disk.
+    <img alt="Screen12" src="../assets/images/installation/Screen%2812%29.png" />
+    <img alt="Screen13" src="../assets/images/installation/Screen%2813%29.png" /></li>
+<li><strong>Click "Finish" to create the virtual machine.</strong>
+    <img alt="Screen14" src="../assets/images/installation/Screen%2814%29.png" /></li>
+<li><strong>Example:</strong> The Sail OS.
+    <img alt="Screen15" src="../assets/images/installation/Screen%2815%29.png" />
+    <img alt="Screen16" src="../assets/images/installation/Screen%2816%29.png" />
+    <img alt="Screen17" src="../assets/images/installation/Screen%2817%29.png" />
+    <img alt="Screen18" src="../assets/images/installation/Screen%2818%29.png" /></li>
 </ul>
-<p>Adjust these settings as needed based on your system resources.</p>
 </li>
 </ol>
+<p>Important Notes:</p>
+<p>Option 1: Use the pre-prepared disk (Recommended)
+For your convenience, I've prepared a pre-formatted virtual disk in the <a href="https://github.com/TheMysteriousStranger90/TheSailOS/tree/master/ExampleVirtualDisk">GitHub</a> repository:</p>
+<p>Download ExampleVirtualDisk.vmdk from the ExampleVirtualDisk folder in my GitHub repository
+Browse to this downloaded .vmdk file when prompted in VMware
+This disk is already properly formatted with FAT32 and ready to use with TheSailOS</p>
+<p>Option 2: Create and prepare your own disk If you prefer to create your own disk:</p>
+<p>First, create a temporary VM with Windows or Linux installed
+In that VM, go to VM -&gt; Settings -&gt; Hard Disk (Device) -&gt; Add
+Select IDE controller type
+Choose "Create a new virtual disk"
+Select "Store virtual disk as a single file"
+Set the desired size (minimum 100MB recommended).</p>
+<p>For Windows users:</p>
+<p>Open Computer Management.
+Navigate to Storage -&gt; Disk Management
+Find your new virtual disk and:
+Right-click and select "Online"
+Right-click and select "Initialize Disk"
+Choose "MBR" partition style
+Right-click on the unallocated space and select "New Simple Volume"
+In the wizard, select "Do not assign a drive letter or drive path"
+Format the volume using FAT32 file system</p>
 <p><strong>Important Notes:</strong></p>
 <ul>
-<li>These instructions are specific to VMware Workstation. The steps may vary slightly if you are using a different virtualization program.</li>
+<li>These instructions are specific to VMware Workstation.</li>
 <li>The minimum system requirements for TheSailOS may change in future releases. Refer to the release notes for the latest recommendations.</li>
 <li>If you encounter any issues during installation, please consult the troubleshooting section of the documentation or report the issue on our <a href="https://github.com/TheMysteriousStranger90/TheSailOS/issues">GitHub repository</a>.</li>
 </ul>
