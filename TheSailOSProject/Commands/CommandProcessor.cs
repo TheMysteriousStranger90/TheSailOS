@@ -10,13 +10,16 @@ using TheSailOSProject.Commands.Disk;
 using TheSailOSProject.Commands.Files;
 using TheSailOSProject.Commands.Games;
 using TheSailOSProject.Commands.Helpers;
+using TheSailOSProject.Commands.Logging;
 using TheSailOSProject.Commands.Memory;
 using TheSailOSProject.Commands.Network;
 using TheSailOSProject.Commands.Permissions;
 using TheSailOSProject.Commands.Power;
 using TheSailOSProject.Commands.Processes;
+using TheSailOSProject.Commands.Search;
 using TheSailOSProject.Commands.Users;
 using TheSailOSProject.FileSystem;
+using TheSailOSProject.Styles;
 using TheSailOSProject.Users;
 
 namespace TheSailOSProject.Commands;
@@ -31,11 +34,12 @@ public class CommandProcessor
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "logout",
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers",
+        "logout",
         "netshutdown", "netconfig", "netstatus", "tcpserver", "tcpclient", "udpserver", "udpclient",
         "cpu", "processinfo", "date", "time", "format", "partition", "partinfo", "partman",
         "playaudio", "stopaudio", "snake", "tetris", "tictactoe", "calculator", "textedit",
-        "permissions", "setpermissions"
+        "permissions", "setpermissions", "find", "grep"
     };
 
     public CommandProcessor(
@@ -53,6 +57,8 @@ public class CommandProcessor
     {
         _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
         _aliasManager = new AliasManager(_availableCommands);
+
+        var fileSearchService = new FileSearchService(fileManager, directoryManager);
         _commands = new Dictionary<string, ICommand>
         {
             { "ls", new ListFilesCommand(fileManager, directoryManager, currentDirectoryManager) },
@@ -87,7 +93,6 @@ public class CommandProcessor
             { "tcpclient", new TcpClientCommand() },
             { "udpserver", new UdpServerCommand() },
             { "udpclient", new UdpClientCommand() },
-            //{ "httpget", new HttpGetCommand() },
 
             { "memory", new MemoryCommand() },
             { "cpu", new CPUCommand() },
@@ -116,12 +121,22 @@ public class CommandProcessor
             { "createuser", new CreateUserCommand() },
             { "deleteuser", new DeleteUserCommand() },
             { "listusers", new ListUsersCommand() },
+            { "useradmin", new UserAdminCommand() },
+            { "userinfo", new UserInfoCommand() },
+            { "changepassword", new ChangePasswordCommand() },
+            { "changeusername", new ChangeUsernameCommand() },
 
             { "calculator", new CalculatorCommand() },
             { "textedit", new TextEditorCommand(fileManager) },
-            
+
             { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) },
-            { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) }
+            { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) },
+
+            { "find", new FileSearchCommands(fileSearchService) },
+
+            { "log", new LogCommand() },
+            
+
         };
     }
 
@@ -129,7 +144,7 @@ public class CommandProcessor
     {
         input = input?.Trim();
         if (string.IsNullOrEmpty(input)) return;
-
+        DisplayWithSyntaxHighlighting(input);
         _historyManager.AddCommand(input);
 
         var parts = input.Split(' ');
@@ -152,10 +167,158 @@ public class CommandProcessor
         }
         else
         {
-            Console.WriteLine($"Unknown command: {commandName}");
+            SuggestSimilarCommands(commandName);
         }
     }
 
+    private int LevenshteinDistance(string s, string t)
+    {
+        int n = s.Length;
+        int m = t.Length;
+
+        int[] d = new int[(n + 1) * (m + 1)];
+
+        if (n == 0) return m;
+        if (m == 0) return n;
+
+        for (int i = 0; i <= n; i++)
+            d[i * (m + 1)] = i;
+
+        for (int j = 0; j <= m; j++)
+            d[j] = j;
+
+        for (int j = 1; j <= m; j++)
+        {
+            for (int i = 1; i <= n; i++)
+            {
+                int cost = (s[i - 1] == t[j - 1]) ? 0 : 1;
+
+                int deletion = d[(i - 1) * (m + 1) + j] + 1;
+                int insertion = d[i * (m + 1) + (j - 1)] + 1;
+                int substitution = d[(i - 1) * (m + 1) + (j - 1)] + cost;
+
+                d[i * (m + 1) + j] = Math.Min(Math.Min(deletion, insertion), substitution);
+            }
+        }
+
+        return d[n * (m + 1) + m];
+    }
+
+    private void SuggestSimilarCommands(string commandName)
+    {
+        var suggestions = new List<string>();
+        int bestDistance = int.MaxValue;
+
+        foreach (var cmd in _commands.Keys)
+        {
+            int distance = LevenshteinDistance(commandName.ToLower(), cmd.ToLower());
+
+            if (distance <= 3)
+            {
+                if (distance < bestDistance)
+                {
+                    suggestions.Clear();
+                    suggestions.Add(cmd);
+                    bestDistance = distance;
+                }
+                else if (distance == bestDistance)
+                {
+                    suggestions.Add(cmd);
+                }
+            }
+        }
+
+        if (suggestions.Count > 0)
+        {
+            if (suggestions.Count == 1)
+            {
+                ConsoleManager.WriteColored($"Command not found. Did you mean '", ConsoleStyle.Colors.Warning);
+                ConsoleManager.WriteColored(suggestions[0], ConsoleStyle.Colors.Primary);
+                ConsoleManager.WriteLineColored($"'?", ConsoleStyle.Colors.Warning);
+            }
+            else
+            {
+                ConsoleManager.WriteLineColored("Command not found. Did you mean one of these?",
+                    ConsoleStyle.Colors.Warning);
+                foreach (var suggestion in suggestions)
+                {
+                    ConsoleManager.WriteColored("  ", ConsoleStyle.Colors.Warning);
+                    ConsoleManager.WriteLineColored(suggestion, ConsoleStyle.Colors.Primary);
+                }
+            }
+        }
+        else
+        {
+            ConsoleManager.WriteLineColored($"Unknown command: {commandName}", ConsoleStyle.Colors.Error);
+        }
+    }
+    
+    public void DisplayWithSyntaxHighlighting(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return;
+
+        string[] parts = input.Split(' ');
+        if (parts.Length == 0)
+            return;
+        
+        string commandName = parts[0].ToLower();
+        if (_commands.ContainsKey(commandName) || _availableCommands.Contains(commandName))
+        {
+            ConsoleManager.WriteColored(commandName, ConsoleStyle.Colors.Command);
+        }
+        else
+        {
+            Console.Write(commandName);
+        }
+        
+        for (int i = 1; i < parts.Length; i++)
+        {
+            Console.Write(" ");
+            HighlightArgument(parts[i]);
+        }
+
+        Console.WriteLine();
+    }
+
+    private void HighlightArgument(string arg)
+    {
+        if (arg.StartsWith("-") || arg.StartsWith("/"))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.Flag);
+        }
+        else if (int.TryParse(arg, out _) || double.TryParse(arg, out _))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.Number);
+        }
+        else if (IsLikelyFilePath(arg))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.FilePath);
+        }
+        else if ((arg.StartsWith("\"") && arg.EndsWith("\"")) ||
+                 (arg.StartsWith("'") && arg.EndsWith("'")))
+        {
+            ConsoleManager.WriteColored(arg, ConsoleStyle.Colors.String);
+        }
+        else
+        {
+            Console.Write(arg);
+        }
+    }
+
+    private bool IsLikelyFilePath(string arg)
+    {
+        return arg.Contains(":\\") ||
+               arg.Contains("/") ||
+               arg.Contains("\\") ||
+               arg.EndsWith(".txt") ||
+               arg.EndsWith(".cs") ||
+               arg.EndsWith(".exe") ||
+               arg.EndsWith(".dll") ||
+               arg.EndsWith(".cfg") ||
+               arg.EndsWith(".log");
+    }
+    
     private Dictionary<string, string> GetHelpTexts()
     {
         return new Dictionary<string, string>
@@ -177,11 +340,14 @@ public class CommandProcessor
             { "copy", "Copies a file from source to destination.\nUsage: copy <source> <destination>" },
             { "move", "Moves a file from source to destination.\nUsage: move <source> <destination>" },
             { "rename", "Renames a file.\nUsage: rename <oldPath> <newName>" },
-            
+
             // Permissions Commands
             { "PERMISSIONS COMMANDS", "The following commands are used to manage file permissions:" },
             { "permissions", "Shows the permissions of a file.\nUsage: permissions <path>" },
-            { "setpermissions", "Sets the permissions of a file.\nUsage: setpermissions <path> <username> <allowRead> <allowWrite>" },
+            {
+                "setpermissions",
+                "Sets the permissions of a file.\nUsage: setpermissions <path> <username> <allowRead> <allowWrite>"
+            },
 
             // History Commands
             { "HISTORY COMMANDS", "The following commands are used to manage command history:" },
@@ -198,11 +364,23 @@ public class CommandProcessor
             { "date", "Shows the current date.\nUsage: date" },
             { "time", "Shows the current time.\nUsage: time" },
             { "log", "Logs a message to the system log.\nUsage: log <message>" },
-            { "login", "Logs in a user.\nUsage: login <username> <password>" },
             { "logout", "Logs out the current user.\nUsage: logout" },
+            { "changepassword", "Changes the password of the current user.\nUsage: changepassword" },
+            { "changeusername", "Changes your username.\n" +
+                                "Usage: changeusername <new_username>\n" +
+                                "Note: Your home directory contents will be moved to the new username location." },
             { "createuser", "Creates a new user.\nUsage: createuser <username> <password>" },
             { "deleteuser", "Deletes a user.\nUsage: deleteuser <username>" },
             { "listusers", "Lists all users.\nUsage: listusers" },
+            { "useradmin", "Manages administrator privileges for users.\n" +
+                           "Usage:\n" +
+                           "  useradmin grant <username>  - Grant administrator privileges\n" +
+                           "  useradmin revoke <username> - Revoke administrator privileges\n" +
+                           "Note: Only administrators can use this command." },
+            { "userinfo", "Displays information about a user.\n" +
+                          "Usage:\n" +
+                          "  userinfo             - Show information about current user\n" +
+                          "  userinfo <username>  - Show information about a specific user (admin only)" },
 
             // Network Commands
             { "NETWORK COMMANDS", "The following commands are used to manage the network:" },
@@ -284,10 +462,17 @@ Examples:
             { "tetris", "Play Tetris game.\nUse arrow keys to move, ESC to exit." },
             { "tictactoe", "Play Tic-Tac-Toe against the computer.\nUse numpad (1-9) to place X." },
 
-            //Application Commands
+            // Application Commands
             { "APPLICATION COMMANDS", "The following commands are used to manage applications:" },
             { "calculator", "Opens the calculator application.\nUsage: calculator" },
-            { "textedit", "Opens the text editor application.\nUsage: textedit 0:\\test.txt" }
+            { "textedit", "Opens the text editor application.\nUsage: textedit 0:\\test.txt" },
+
+            // Search Commands
+            { "FILE SEARCH COMMANDS", "The following commands are used to search files and content:" },
+            {
+                "find",
+                "Finds files matching a specified pattern.\nUsage: find <pattern> [path] [-r]\n  -r: Search recursively through subdirectories\nExamples:\n  find\n  find *.cs 0:\\System -r"
+            },
         };
     }
 }

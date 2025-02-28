@@ -1,57 +1,100 @@
 ﻿using System;
-using System.Linq;
-using TheSailOSProject.Session;
 using TheSailOSProject.Styles;
 using TheSailOSProject.Users;
 
-namespace TheSailOSProject.Commands.Users;
-
-public class LoginCommand : ICommand
+namespace TheSailOSProject.Commands.Users
 {
-    private readonly ILoginHandler _loginHandler;
-
-    public LoginCommand(ILoginHandler loginHandler)
+    public class LoginCommand : ICommand
     {
-        _loginHandler = loginHandler ?? throw new ArgumentNullException(nameof(loginHandler));
-    }
+        private readonly ILoginHandler _loginHandler;
 
-    public void Execute(string[] args)
-    {
-        if (args.Length != 2)
+        public LoginCommand(ILoginHandler loginHandler)
         {
-            ConsoleManager.WriteLineColored("Usage: login <username> <password>", ConsoleStyle.Colors.Error);
-            return;
+            _loginHandler = loginHandler;
         }
 
-        string username = args[0];
-        string password = args[1];
-
-        if (UserManager.VerifyLogin(username, password, out User loggedInUser))
+        public void Execute(string[] args)
         {
-            var existingSessions = SessionManager.GetAllSessions()
-                .Where(s => s.User.Username == username)
-                .ToList();
-
-            if (existingSessions.Any())
+            if (args.Length < 2)
             {
-                ConsoleManager.WriteLineColored("Terminating existing sessions...", ConsoleStyle.Colors.Warning);
-                foreach (var session in existingSessions)
+                ConsoleManager.WriteLineColored("Usage: login <username> <password>", ConsoleStyle.Colors.Error);
+                return;
+            }
+
+            string username = args[0];
+            string password = args[1];
+
+            if (UserManager.VerifyLogin(username, password, out User user))
+            {
+                if (user.PasswordExpired)
                 {
-                    SessionManager.EndSession(session.SessionId);
+                    ConsoleManager.WriteLineColored("Your password has expired and must be changed.",
+                        ConsoleStyle.Colors.Warning);
+
+                    _loginHandler.OnLoginSuccess(user);
+
+                    ConsoleManager.WriteColored("New password: ", ConsoleStyle.Colors.Primary);
+                    string newPassword = ReadPasswordSecurely();
+
+                    ConsoleManager.WriteColored("Confirm new password: ", ConsoleStyle.Colors.Primary);
+                    string confirmPassword = ReadPasswordSecurely();
+
+                    if (string.IsNullOrEmpty(newPassword) || newPassword.Length < 4)
+                    {
+                        ConsoleManager.WriteLineColored("Password is too short. It must be at least 4 characters.",
+                            ConsoleStyle.Colors.Error);
+                        return;
+                    }
+
+                    if (newPassword != confirmPassword)
+                    {
+                        ConsoleManager.WriteLineColored("Passwords do not match.", ConsoleStyle.Colors.Error);
+                        return;
+                    }
+
+                    if (UserManager.ChangePassword(user, newPassword))
+                    {
+                        ConsoleManager.WriteLineColored("Password changed successfully.", ConsoleStyle.Colors.Success);
+                    }
+                    else
+                    {
+                        ConsoleManager.WriteLineColored("Failed to change password.", ConsoleStyle.Colors.Error);
+                    }
+                }
+                else
+                {
+                    _loginHandler.OnLoginSuccess(user);
                 }
             }
-            
-            ConsoleManager.WriteLineColored($"Login successful for user: {username}", ConsoleStyle.Colors.Success);
-            _loginHandler.OnLoginSuccess(loggedInUser);
+            else
+            {
+                ConsoleManager.WriteLineColored("Invalid username or password.", ConsoleStyle.Colors.Error);
+            }
         }
-        else
-        {
-            ConsoleManager.WriteLineColored("Login failed. Invalid username or password.", ConsoleStyle.Colors.Error);
-        }
-    }
 
-    public string HelpText()
-    {
-        return "Logs in a user.\nUsage: login <username> <password>";
+        private string ReadPasswordSecurely()
+        {
+            var password = string.Empty;
+            ConsoleKeyInfo key;
+
+            do
+            {
+                key = Console.ReadKey(true);
+
+                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter && !char.IsControl(key.KeyChar))
+                {
+                    password += key.KeyChar;
+                    Console.Write("*");
+                }
+                else if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    password = password.Substring(0, password.Length - 1);
+                    Console.Write("\b \b");
+                }
+            } while (key.Key != ConsoleKey.Enter);
+
+            Console.WriteLine();
+            return password;
+        }
     }
 }

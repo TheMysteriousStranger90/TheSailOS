@@ -12,6 +12,13 @@ public static class ConsoleStyle
         public static ConsoleColor Error = ConsoleColor.Red;
         public static ConsoleColor Warning = ConsoleColor.DarkYellow;
         public static ConsoleColor Success = ConsoleColor.DarkGreen;
+        
+        
+        public static ConsoleColor Command = ConsoleColor.Magenta;
+        public static ConsoleColor FilePath = ConsoleColor.Blue;
+        public static ConsoleColor Flag = ConsoleColor.DarkCyan;
+        public static ConsoleColor Number = ConsoleColor.Red;
+        public static ConsoleColor String = ConsoleColor.White;
     }
 
     public static class Symbols

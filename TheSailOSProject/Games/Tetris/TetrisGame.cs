@@ -45,25 +45,78 @@ namespace TheSailOSProject.Games.Tetris
             Console.Clear();
 
             var lastMoveTime = System.DateTime.Now;
+            var frameDelay = FRAME_DELAY;
 
             while (!_gameOver)
             {
-                if (Console.KeyAvailable)
+                try
                 {
-                    HandleInput();
-                }
+                    if (Console.KeyAvailable)
+                    {
+                        var key = Console.ReadKey(true);
+                        HandleKeyPress(key.Key);
+                    }
 
-                if ((System.DateTime.Now - lastMoveTime).TotalMilliseconds > FRAME_DELAY / _level)
+                    frameDelay = Math.Max(50, FRAME_DELAY - ((_level - 1) * 30));
+
+                    if ((System.DateTime.Now - lastMoveTime).TotalMilliseconds > frameDelay)
+                    {
+                        MovePieceDown();
+                        lastMoveTime = System.DateTime.Now;
+                    }
+
+                    Draw();
+                    Thread.Sleep(50);
+                }
+                catch (Exception ex)
                 {
-                    MovePieceDown();
-                    lastMoveTime = System.DateTime.Now;
+                    Console.SetCursorPosition(0, HEIGHT + 6);
+                    Console.WriteLine($"Game error: {ex.Message}");
+                    Thread.Sleep(1000);
                 }
-
-                Draw();
-                Thread.Sleep(50);
             }
 
+            Console.CursorVisible = true;
             ShowGameOver();
+        }
+
+        private void HandleKeyPress(ConsoleKey key)
+        {
+            try
+            {
+                switch (key)
+                {
+                    case ConsoleKey.LeftArrow:
+                        if (CanMoveTo(_currentPosition.X - 1, _currentPosition.Y))
+                            _currentPosition.X--;
+                        break;
+
+                    case ConsoleKey.RightArrow:
+                        if (CanMoveTo(_currentPosition.X + 1, _currentPosition.Y))
+                            _currentPosition.X++;
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        MovePieceDown();
+                        _score++;
+                        break;
+
+                    case ConsoleKey.UpArrow:
+                        RotatePiece();
+                        break;
+
+                    case ConsoleKey.Spacebar:
+                        HardDrop();
+                        break;
+
+                    case ConsoleKey.Escape:
+                        _gameOver = true;
+                        break;
+                }
+            }
+            catch
+            {
+            }
         }
 
         private void DrawStartScreen()
@@ -79,51 +132,25 @@ namespace TheSailOSProject.Games.Tetris
             ConsoleManager.WriteLineColored("\nPress any key to start...", ConsoleStyle.Colors.Warning);
         }
 
-        private void HandleInput()
-        {
-            var key = Console.ReadKey(true).Key;
-            switch (key)
-            {
-                case ConsoleKey.LeftArrow:
-                    if (CanMoveTo(_currentPosition.X - 1, _currentPosition.Y))
-                        _currentPosition.X--;
-                    break;
-
-                case ConsoleKey.RightArrow:
-                    if (CanMoveTo(_currentPosition.X + 1, _currentPosition.Y))
-                        _currentPosition.X++;
-                    break;
-
-                case ConsoleKey.DownArrow:
-                    MovePieceDown();
-                    _score++;
-                    break;
-
-                case ConsoleKey.UpArrow:
-                    RotatePiece();
-                    break;
-
-                case ConsoleKey.Spacebar:
-                    HardDrop();
-                    break;
-
-                case ConsoleKey.Escape:
-                    _gameOver = true;
-                    break;
-            }
-        }
-
         private void MovePieceDown()
         {
-            if (CanMoveTo(_currentPosition.X, _currentPosition.Y + 1))
+            try
             {
-                _currentPosition.Y++;
+                if (CanMoveTo(_currentPosition.X, _currentPosition.Y + 1))
+                {
+                    _currentPosition.Y++;
+                }
+                else
+                {
+                    PlacePiece();
+                    CheckLines();
+                    SpawnNewPiece();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                PlacePiece();
-                CheckLines();
-                SpawnNewPiece();
+                Console.SetCursorPosition(0, HEIGHT + 7);
+                Console.WriteLine($"Movement error: {ex.Message}");
             }
         }
 
@@ -134,6 +161,7 @@ namespace TheSailOSProject.Games.Tetris
                 _currentPosition.Y++;
                 _score += 2;
             }
+
             PlacePiece();
             CheckLines();
             SpawnNewPiece();
@@ -171,6 +199,7 @@ namespace TheSailOSProject.Games.Tetris
             for (int y = HEIGHT - 1; y >= 0; y--)
             {
                 bool isLineFull = true;
+
                 for (int x = 0; x < WIDTH; x++)
                 {
                     if (_playField[y * WIDTH + x] == 0)
@@ -182,7 +211,20 @@ namespace TheSailOSProject.Games.Tetris
 
                 if (isLineFull)
                 {
-                    ClearLine(y);
+                    for (int moveY = y; moveY > 0; moveY--)
+                    {
+                        for (int x = 0; x < WIDTH; x++)
+                        {
+                            _playField[moveY * WIDTH + x] = _playField[(moveY - 1) * WIDTH + x];
+                        }
+                    }
+
+                    for (int x = 0; x < WIDTH; x++)
+                    {
+                        _playField[x] = 0;
+                    }
+
+                    y++;
                     linesCleared++;
                 }
             }
@@ -190,8 +232,8 @@ namespace TheSailOSProject.Games.Tetris
             if (linesCleared > 0)
             {
                 _linesCleared += linesCleared;
-                _score += linesCleared * 100 * _level;
-                _level = (_linesCleared / 10) + 1;
+                _score += linesCleared * 100 * _level * linesCleared;
+                _level = Math.Min(10, (_linesCleared / 10) + 1);
             }
         }
 
@@ -241,31 +283,36 @@ namespace TheSailOSProject.Games.Tetris
                     }
                 }
             }
+
             return true;
         }
 
         private void Draw()
         {
-            Console.SetCursorPosition(0, 0);
-
-            ConsoleManager.WriteLineColored("╔" + new string('═', WIDTH * 2) + "╗", ConsoleStyle.Colors.Primary);
-
-            for (int y = 0; y < HEIGHT; y++)
+            try
             {
-                ConsoleManager.WriteColored("║", ConsoleStyle.Colors.Primary);
+                Console.SetCursorPosition(0, 0);
 
-                for (int x = 0; x < WIDTH; x++)
+                ConsoleManager.WriteColored("╔" + new string('═', WIDTH * 2) + "╗", ConsoleStyle.Colors.Primary);
+                Console.WriteLine();
+
+                for (int y = 0; y < HEIGHT; y++)
                 {
-                    bool isPieceCell = false;
-                    if (_currentPiece != null)
+                    ConsoleManager.WriteColored("║", ConsoleStyle.Colors.Primary);
+
+                    for (int x = 0; x < WIDTH; x++)
                     {
-                        for (int py = 0; py < TetrisPiece.SIZE; py++)
+                        bool isPieceCell = false;
+
+                        if (_currentPiece != null)
                         {
-                            for (int px = 0; px < TetrisPiece.SIZE; px++)
+                            int pieceX = x - _currentPosition.X;
+                            int pieceY = y - _currentPosition.Y;
+
+                            if (pieceX >= 0 && pieceX < TetrisPiece.SIZE &&
+                                pieceY >= 0 && pieceY < TetrisPiece.SIZE)
                             {
-                                if (_currentPosition.X + px == x &&
-                                    _currentPosition.Y + py == y &&
-                                    _currentPiece.GetShape(px, py) != 0)
+                                if (_currentPiece.GetShape(pieceX, pieceY) != 0)
                                 {
                                     var colors = GetColorForNumber(_currentPiece.Color);
                                     ConsoleManager.WriteColored("██", colors.fore, colors.back);
@@ -273,27 +320,36 @@ namespace TheSailOSProject.Games.Tetris
                                 }
                             }
                         }
-                    }
 
-                    if (!isPieceCell)
-                    {
-                        int cell = _playField[y * WIDTH + x];
-                        if (cell == 0)
-                            Console.Write("  ");
-                        else
+                        if (!isPieceCell)
                         {
-                            var colors = GetColorForNumber(cell);
-                            ConsoleManager.WriteColored("██", colors.fore, colors.back);
+                            int cellValue = (y >= 0 && x >= 0) ? _playField[y * WIDTH + x] : 0;
+                            if (cellValue == 0)
+                            {
+                                Console.Write("  ");
+                            }
+                            else
+                            {
+                                var colors = GetColorForNumber(cellValue);
+                                ConsoleManager.WriteColored("██", colors.fore, colors.back);
+                            }
                         }
                     }
+
+                    ConsoleManager.WriteColored("║", ConsoleStyle.Colors.Primary);
+                    Console.WriteLine();
                 }
 
-                ConsoleManager.WriteLineColored("║", ConsoleStyle.Colors.Primary);
-            }
+                ConsoleManager.WriteColored("╚" + new string('═', WIDTH * 2) + "╝", ConsoleStyle.Colors.Primary);
+                Console.WriteLine();
 
-            ConsoleManager.WriteLineColored("╚" + new string('═', WIDTH * 2) + "╝", ConsoleStyle.Colors.Primary);
-            
-            DrawStats();
+                DrawStats();
+            }
+            catch (Exception ex)
+            {
+                Console.SetCursorPosition(0, HEIGHT + 5);
+                Console.WriteLine($"Drawing error: {ex.Message}");
+            }
         }
 
         private void DrawStats()
@@ -326,14 +382,14 @@ namespace TheSailOSProject.Games.Tetris
         {
             return num switch
             {
-                1 => (ConsoleColor.White, ConsoleColor.Red),      // I Piece
-                2 => (ConsoleColor.White, ConsoleColor.Blue),     // O Piece
-                3 => (ConsoleColor.Black, ConsoleColor.Yellow),   // T Piece
-                4 => (ConsoleColor.White, ConsoleColor.DarkGreen),// S Piece
-                5 => (ConsoleColor.White, ConsoleColor.Magenta),  // Z Piece
-                6 => (ConsoleColor.Black, ConsoleColor.Cyan),     // J Piece
-                7 => (ConsoleColor.White, ConsoleColor.DarkRed),  // L Piece
-                _ => (ConsoleColor.Gray, ConsoleColor.Black)      // Empty/Default
+                1 => (ConsoleColor.White, ConsoleColor.Red), // I Piece
+                2 => (ConsoleColor.White, ConsoleColor.Blue), // O Piece
+                3 => (ConsoleColor.Black, ConsoleColor.Yellow), // T Piece
+                4 => (ConsoleColor.White, ConsoleColor.DarkGreen), // S Piece
+                5 => (ConsoleColor.White, ConsoleColor.Magenta), // Z Piece
+                6 => (ConsoleColor.Black, ConsoleColor.Cyan), // J Piece
+                7 => (ConsoleColor.White, ConsoleColor.DarkRed), // L Piece
+                _ => (ConsoleColor.Gray, ConsoleColor.Black) // Empty/Default
             };
         }
     }
