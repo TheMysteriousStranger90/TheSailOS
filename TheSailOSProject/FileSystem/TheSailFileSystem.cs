@@ -85,39 +85,6 @@ public class TheSailFileSystem : CosmosVFS, IFileManager, IDirectoryManager, ICa
         }
     }
 
-
-/*
-    public void Initialize()
-    {
-        try
-        {
-            _vfs = new CosmosVFS();
-            VFSManager.RegisterVFS(_vfs);
-
-            _fileCache = new Dictionary<string, byte[]>();
-            Console.WriteLine("[INFO] Virtual filesystem initialized");
-            
-            foreach (var disk in VFSManager.GetDisks())
-            {
-                Console.WriteLine($"[INFO] Mounting disk {VFSManager.GetDisks().IndexOf(disk)}...");
-                disk.Mount();
-            }
-            
-            var dir = VFSManager.GetDirectory(SystemDirectory);
-            if (dir == null)
-            {
-                VFSManager.CreateDirectory(SystemDirectory);
-                Console.WriteLine($"[INFO] Created system directory: {SystemDirectory}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR] Failed to initialize filesystem: {ex.Message}");
-            throw new FileSystemException("Failed to initialize filesystem", ex);
-        }
-    }
-*/
-
     // IFileManager implementation
     public bool CreateFileTheSail(string path)
     {
