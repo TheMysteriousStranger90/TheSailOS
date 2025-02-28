@@ -6,6 +6,7 @@ using TheSailOSProject.Commands.Directories;
 using TheSailOSProject.Commands.Helpers;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Hardware.Memory;
+using TheSailOSProject.Hardware.Timer;
 using TheSailOSProject.Logging;
 using TheSailOSProject.Network;
 using TheSailOSProject.Permissions;
@@ -65,17 +66,6 @@ namespace TheSailOSProject
 
         protected override void Run()
         {
-            /*
-            var lastCleanup = System.DateTime.Now;
-            while (true)
-            {
-                if ((System.DateTime.Now - lastCleanup).TotalMinutes >= 5)
-                {
-                    SessionManager.CleanupInactiveSessions(TimeSpan.FromMinutes(30));
-                    lastCleanup = System.DateTime.Now;
-                }
-            */
-
             try
             {
                 while (true)
@@ -252,6 +242,14 @@ namespace TheSailOSProject
             ProcessManager.Update();
         }
 
+        private void InitializeTimers()
+        {
+            Console.WriteLine("Initializing Timer Manager...");
+            TimerManager.Initialize();
+            
+            TimerManager.CreateTimer("session_cleanup", 60000000000, SessionCleanupCallback, true);
+        }
+        
         private void InitializeFtpServer()
         {
             Console.WriteLine("Initializing FTP Server...");
@@ -312,6 +310,11 @@ namespace TheSailOSProject
             Console.WriteLine("Press any key to reboot...");
             Console.ReadKey();
             Sys.Power.Reboot();
+        }
+        
+        private void SessionCleanupCallback()
+        {
+            SessionManager.CleanupInactiveSessions(TimeSpan.FromMinutes(30));
         }
     }
 }
