@@ -125,7 +125,7 @@ namespace TheSailOSProject.Users
         public static bool CreateUser(string username, string password, string type)
         {
             EnsureInitialized();
-            
+
             string validationError;
             if (!IsValidUsername(username, out validationError))
             {
@@ -489,28 +489,28 @@ namespace TheSailOSProject.Users
                 User user = GetUser(oldUsername);
                 if (user == null)
                     return false;
-                
+
                 string validationError;
                 if (!IsValidUsername(newUsername, out validationError))
                     return false;
 
                 if (GetUser(newUsername) != null)
                     return false;
-                
+
                 User updatedUser = new User(newUsername, user.PasswordHash, user.Type)
                 {
                     PasswordExpired = user.PasswordExpired,
                     PasswordLastChanged = user.PasswordLastChanged
                 };
-                
+
                 _users.Add(updatedUser);
-                
+
                 MoveUserHomeDirectory(oldUsername, newUsername);
-                
+
                 _users.Remove(user);
-                
+
                 SaveUsers();
-                
+
                 if (Kernel.CurrentUser != null && Kernel.CurrentUser.Username == oldUsername)
                 {
                     Kernel.CurrentUser = GetUser(newUsername);
@@ -524,68 +524,119 @@ namespace TheSailOSProject.Users
                 return false;
             }
         }
-        
+
         private static void MoveUserHomeDirectory(string oldUsername, string newUsername)
         {
             try
             {
                 string oldHomeDir = Path.Combine(HomeDirectoryBase, oldUsername);
                 string newHomeDir = Path.Combine(HomeDirectoryBase, newUsername);
-                
+
                 if (Directory.Exists(oldHomeDir))
                 {
+                    Console.WriteLine($"[INFO] Moving home directory from {oldHomeDir} to {newHomeDir}");
+
                     if (!Directory.Exists(newHomeDir))
                     {
                         Directory.CreateDirectory(newHomeDir);
+                        Console.WriteLine($"[INFO] Created new home directory: {newHomeDir}");
                     }
-
-                    // Copy all files from old to new directory
-                    foreach (string file in Directory.GetFiles(oldHomeDir))
+                    else
                     {
-                        string fileName = Path.GetFileName(file);
-                        File.Copy(file, Path.Combine(newHomeDir, fileName), true);
+                        Console.WriteLine($"[INFO] Destination directory {newHomeDir} already exists.");
                     }
 
-                    // Process all subdirectories
-                    foreach (string dir in Directory.GetDirectories(oldHomeDir))
-                    {
-                        string dirName = new DirectoryInfo(dir).Name;
-                        string newSubDir = Path.Combine(newHomeDir, dirName);
+                    CopyUserFiles(oldHomeDir, newHomeDir);
 
-                        // Create subdirectory in destination
-                        if (!Directory.Exists(newSubDir))
-                        {
-                            Directory.CreateDirectory(newSubDir);
-                        }
-
-                        // Copy files in subdirectory
-                        foreach (string file in Directory.GetFiles(dir))
-                        {
-                            string fileName = Path.GetFileName(file);
-                            File.Copy(file, Path.Combine(newSubDir, fileName), true);
-                        }
-
-                        // Note: This is a simple implementation that only copies one level of subdirectories
-                        // A full recursive copy would be more robust for complex directory structures
-                    }
-                    
                     try
                     {
                         Directory.Delete(oldHomeDir, true);
+                        Console.WriteLine($"[INFO] Old home directory removed: {oldHomeDir}");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[WARNING] Failed to delete old home directory: {ex.Message}");
+                        Console.WriteLine($"[WARNING] Could not remove old home directory: {ex.Message}");
+                        Console.WriteLine($"[WARNING] You may need to manually delete {oldHomeDir}");
                     }
                 }
                 else
                 {
                     CreateUserHomeDirectory(newUsername);
+                    Console.WriteLine($"[INFO] Created new home directory for user {newUsername}");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Failed to move home directory: {ex.Message}");
+
+                try
+                {
+                    if (!Directory.Exists(Path.Combine(HomeDirectoryBase, newUsername)))
+                    {
+                        CreateUserHomeDirectory(newUsername);
+                        Console.WriteLine($"[INFO] Created empty home directory for user {newUsername}");
+                    }
+                }
+                catch (Exception dirEx)
+                {
+                    Console.WriteLine($"[ERROR] Failed to create new home directory: {dirEx.Message}");
+                }
+            }
+        }
+
+        private static void CopyUserFiles(string sourceDir, string destDir)
+        {
+            Console.WriteLine($"[INFO] Copying user files from {sourceDir} to {destDir}");
+            
+            if (!Directory.Exists(destDir))
+            {
+                Directory.CreateDirectory(destDir);
+            }
+            
+            Directory.CreateDirectory(Path.Combine(destDir, "Documents"));
+            Directory.CreateDirectory(Path.Combine(destDir, "Downloads"));
+
+            try
+            {
+                foreach (string file in Directory.GetFiles(sourceDir))
+                {
+                    string filename = Path.GetFileName(file);
+                    string destFile = Path.Combine(destDir, filename);
+                    File.Copy(file, destFile, true);
+                    Console.WriteLine($"[INFO] Copied file: {filename}");
+                }
+
+                string docSource = Path.Combine(sourceDir, "Documents");
+                string docDest = Path.Combine(destDir, "Documents");
+
+                if (Directory.Exists(docSource))
+                {
+                    foreach (string file in Directory.GetFiles(docSource))
+                    {
+                        string filename = Path.GetFileName(file);
+                        string destFile = Path.Combine(docDest, filename);
+                        File.Copy(file, destFile, true);
+                        Console.WriteLine($"[INFO] Copied document: {filename}");
+                    }
+                }
+                
+                string dlSource = Path.Combine(sourceDir, "Downloads");
+                string dlDest = Path.Combine(destDir, "Downloads");
+
+                if (Directory.Exists(dlSource))
+                {
+                    foreach (string file in Directory.GetFiles(dlSource))
+                    {
+                        string filename = Path.GetFileName(file);
+                        string destFile = Path.Combine(dlDest, filename);
+                        File.Copy(file, destFile, true);
+                        Console.WriteLine($"[INFO] Copied download: {filename}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARNING] Error while copying some files: {ex.Message}");
             }
         }
     }
