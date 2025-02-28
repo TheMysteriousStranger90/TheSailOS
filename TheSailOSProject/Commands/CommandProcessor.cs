@@ -17,6 +17,7 @@ using TheSailOSProject.Commands.Permissions;
 using TheSailOSProject.Commands.Power;
 using TheSailOSProject.Commands.Processes;
 using TheSailOSProject.Commands.Search;
+using TheSailOSProject.Commands.SystemTimer;
 using TheSailOSProject.Commands.Users;
 using TheSailOSProject.FileSystem;
 using TheSailOSProject.Styles;
@@ -136,7 +137,7 @@ public class CommandProcessor
 
             { "log", new LogCommand() },
             
-
+            { "timer", new TimerCommand() },
         };
     }
 
@@ -381,6 +382,8 @@ public class CommandProcessor
                           "Usage:\n" +
                           "  userinfo             - Show information about current user\n" +
                           "  userinfo <username>  - Show information about a specific user (admin only)" },
+            { "timer", "Manages system timers.\nUsage:\n  timer list - List all timers\n  timer create <name> <ms> <recurring> - Create timer\n  timer destroy <name> - Remove timer" },
+
 
             // Network Commands
             { "NETWORK COMMANDS", "The following commands are used to manage the network:" },
