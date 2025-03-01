@@ -350,6 +350,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#search-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      Search Commands
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#system-commands" class="md-nav__link">
     <span class="md-ellipsis">
       System Commands
@@ -431,9 +440,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#user-session-commands" class="md-nav__link">
+  <a href="#user-management-commands" class="md-nav__link">
     <span class="md-ellipsis">
-      User Session Commands
+      User Management Commands
     </span>
   </a>
   
@@ -513,6 +522,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#search-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      Search Commands
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#system-commands" class="md-nav__link">
     <span class="md-ellipsis">
       System Commands
@@ -594,9 +612,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#user-session-commands" class="md-nav__link">
+  <a href="#user-management-commands" class="md-nav__link">
     <span class="md-ellipsis">
-      User Session Commands
+      User Management Commands
     </span>
   </a>
   
@@ -693,6 +711,18 @@ categorized by functionality.</p>
 </li>
 <li><strong>clear:</strong> Clears the command history.<ul>
 <li>Usage: <code>clear</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="search-commands">Search Commands</h2>
+<p>The following commands are used to search files and content:</p>
+<ul>
+<li><strong>find:</strong> Finds files matching a specified pattern.<ul>
+<li>Usage: <code>find &lt;pattern&gt; [path]</code></li>
+<li>Examples:<ul>
+<li><code>find *.txt</code> - Find all .txt files</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -917,11 +947,37 @@ categorized by functionality.</p>
 </ul>
 </li>
 </ul>
-<h2 id="user-session-commands">User Session Commands</h2>
+<h2 id="user-management-commands">User Management Commands</h2>
 <p>The following commands are used to manage user sessions:</p>
 <ul>
 <li><strong>logout:</strong> Logs out the current user.<ul>
 <li>Usage: <code>logout</code></li>
+</ul>
+</li>
+<li><strong>useradmin:</strong> Manages administrator privileges for users.<ul>
+<li>Usage:<ul>
+<li><code>useradmin grant &lt;username&gt;</code>  - Grant administrator privileges</li>
+<li><code>useradmin revoke &lt;username&gt;</code> - Revoke administrator privileges</li>
+</ul>
+</li>
+<li>Note: Only administrators can use this command.</li>
+</ul>
+</li>
+<li><strong>userinfo:</strong> Displays information about a user.<ul>
+<li>Usage:<ul>
+<li><code>userinfo</code>             - Show information about current user</li>
+<li><code>userinfo &lt;username&gt;</code>  - Show information about a specific user (admin only)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>changepassword:</strong> Changes the password of the current user.<ul>
+<li>Usage: <code>changepassword</code></li>
+</ul>
+</li>
+<li><strong>changeusername:</strong> Changes your username.<ul>
+<li>Usage: <code>changeusername &lt;new_username&gt;</code></li>
+<li>Note: Your home directory contents will be moved to the new username location.</li>
 </ul>
 </li>
 </ul>
