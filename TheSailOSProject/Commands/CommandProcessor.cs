@@ -17,6 +17,7 @@ using TheSailOSProject.Commands.Permissions;
 using TheSailOSProject.Commands.Power;
 using TheSailOSProject.Commands.Processes;
 using TheSailOSProject.Commands.Search;
+using TheSailOSProject.Commands.Session;
 using TheSailOSProject.Commands.SystemTimer;
 using TheSailOSProject.Commands.Users;
 using TheSailOSProject.FileSystem;
@@ -35,12 +36,13 @@ public class CommandProcessor
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers",
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "useradmin", "userinfo",
+        "changepassword", "changeusername",
         "logout",
         "netshutdown", "netconfig", "netstatus", "tcpserver", "tcpclient", "udpserver", "udpclient",
         "cpu", "processinfo", "date", "time", "format", "partition", "partinfo", "partman",
         "playaudio", "stopaudio", "snake", "tetris", "tictactoe", "calculator", "textedit",
-        "permissions", "setpermissions", "find", "grep"
+        "permissions", "setpermissions", "find", "grep", "session", 
     };
 
     public CommandProcessor(
@@ -138,6 +140,8 @@ public class CommandProcessor
             { "log", new LogCommand() },
             
             { "timer", new TimerCommand() },
+            
+            { "session", new SessionCommand() },
         };
     }
 
@@ -384,6 +388,15 @@ public class CommandProcessor
                           "  userinfo <username>  - Show information about a specific user (admin only)" },
             { "timer", "Manages system timers.\nUsage:\n  timer list - List all timers\n  timer create <name> <ms> <recurring> - Create timer\n  timer destroy <name> - Remove timer" },
 
+            { "SESSION COMMANDS", "The following commands are used to manage user sessions:" },
+            { "session", 
+                "Manages user sessions.\n" +
+                "Usage:\n" +
+                "  session list          - List all active sessions\n" +
+                "  session stats         - Show session statistics\n" +
+                "  session info [id]     - Show current or specific session info\n" +
+                "  session kill <id>     - Terminate a specific session (admin only)\n" +
+                "  session cleanup       - Clean up inactive sessions (admin only)" },
 
             // Network Commands
             { "NETWORK COMMANDS", "The following commands are used to manage the network:" },
