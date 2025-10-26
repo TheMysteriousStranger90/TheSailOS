@@ -6,125 +6,128 @@ using System;
 using Cosmos.HAL.Drivers.PCI.Audio;
 using TheSailOSProject.Styles;
 
-namespace TheSailOSProject.Audio
+namespace TheSailOSProject.Audio;
+
+public class AudioManager : IAudioManager
 {
-    public class AudioManager : IAudioManager
+    private AudioDriver _driver;
+    private AudioMixer _mixer;
+    private AudioStream _audioStream;
+    private Cosmos.System.Audio.AudioManager _audioManager;
+    private GainPostProcessor _gainProcessor;
+    private bool _isInitialized;
+    private const float DefaultGain = 0.5f;
+    private const int BufferSize = 4096;
+
+    public bool IsAudioEnabled => _isInitialized;
+
+    public void Initialize()
     {
-        private AudioDriver _driver;
-        private AudioMixer _mixer;
-        private AudioStream _audioStream;
-        private Cosmos.System.Audio.AudioManager _audioManager;
-        private bool _isInitialized;
-        private const float DefaultGain = 0.5f;
-        private const int BufferSize = 4096;
-
-        public bool IsAudioEnabled => _isInitialized;
-
-        public void Initialize()
+        try
         {
-            try
-            {
-                ConsoleManager.WriteLineColored("[INFO] Initializing audio driver...", ConsoleStyle.Colors.Warning);
+            ConsoleManager.WriteLineColored("[INFO] Initializing audio driver...", ConsoleStyle.Colors.Warning);
 
-                _driver = AC97.Initialize(BufferSize);
-                _mixer = new AudioMixer();
-                
-                _audioManager = new Cosmos.System.Audio.AudioManager()
-                {
-                    Stream = _mixer,
-                    Output = _driver
-                };
+            _driver = AC97.Initialize(BufferSize);
+            _mixer = new AudioMixer();
+            _gainProcessor = new GainPostProcessor(DefaultGain);
 
-                _audioManager.Enable();
-                _isInitialized = true;
+            _audioManager = new Cosmos.System.Audio.AudioManager()
+            {
+                Stream = _mixer,
+                Output = _driver
+            };
 
-                ConsoleManager.WriteLineColored("[INFO] Audio driver initialized successfully.",
-                    ConsoleStyle.Colors.Success);
-            }
-            catch (InvalidOperationException)
-            {
-                ConsoleManager.WriteLineColored("[ERROR] No AC97 device found.", ConsoleStyle.Colors.Error);
-                _isInitialized = false;
-            }
-            catch (Exception ex)
-            {
-                ConsoleManager.WriteLineColored($"[ERROR] Audio initialization failed: {ex.Message}",
-                    ConsoleStyle.Colors.Error);
-                _isInitialized = false;
-            }
+            _audioManager.Enable();
+            _isInitialized = true;
+
+            ConsoleManager.WriteLineColored("[INFO] Audio driver initialized successfully.",
+                ConsoleStyle.Colors.Success);
+        }
+        catch (InvalidOperationException)
+        {
+            ConsoleManager.WriteLineColored("[ERROR] No AC97 device found.", ConsoleStyle.Colors.Error);
+            _isInitialized = false;
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"[ERROR] Audio initialization failed: {ex.Message}",
+                ConsoleStyle.Colors.Error);
+            _isInitialized = false;
+        }
+    }
+
+    public void Play(byte[] audioData)
+    {
+        if (!_isInitialized)
+        {
+            throw new InvalidOperationException("Audio system is not initialized.");
         }
 
-        public void Play(byte[] audioData)
+        try
         {
-            if (!_isInitialized)
+            if (_audioStream != null)
             {
-                throw new InvalidOperationException("Audio system is not initialized.");
+                _mixer.Streams.Remove(_audioStream);
             }
 
-            try
-            {
-                _audioStream = MemoryAudioStream.FromWave(audioData);
-                _audioStream.PostProcessors.Add(new GainPostProcessor(DefaultGain));
-                _mixer.Streams.Add(_audioStream);
+            _audioStream = MemoryAudioStream.FromWave(audioData);
+            _audioStream.PostProcessors.Add(_gainProcessor);
+            _mixer.Streams.Add(_audioStream);
 
-                _audioManager = new Cosmos.System.Audio.AudioManager
-                {
-                    Stream = _mixer,
-                    Output = _driver
-                };
+            ConsoleManager.WriteLineColored("[INFO] Audio playback started.", ConsoleStyle.Colors.Success);
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"[ERROR] Failed to play audio: {ex.Message}",
+                ConsoleStyle.Colors.Error);
+            throw;
+        }
+    }
 
-                _audioManager.Enable();
-
-                ConsoleManager.WriteLineColored("[INFO] Audio playback started.", ConsoleStyle.Colors.Success);
-            }
-            catch (Exception ex)
-            {
-                ConsoleManager.WriteLineColored($"[ERROR] Failed to play audio: {ex.Message}",
-                    ConsoleStyle.Colors.Error);
-                throw;
-            }
+    public void Stop()
+    {
+        if (!_isInitialized)
+        {
+            return;
         }
 
-        public void Stop()
+        try
         {
-            if (!_isInitialized)
+            if (_audioStream != null)
             {
-                return;
+                _mixer.Streams.Remove(_audioStream);
+                _audioStream = null;
             }
 
-            try
-            {
-                _audioManager?.Disable();
-                _mixer?.Streams.Clear();
+            ConsoleManager.WriteLineColored("[INFO] Audio playback stopped.", ConsoleStyle.Colors.Success);
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"[ERROR] Failed to stop audio: {ex.Message}",
+                ConsoleStyle.Colors.Error);
+        }
+    }
 
-                ConsoleManager.WriteLineColored("[INFO] Audio playback stopped.", ConsoleStyle.Colors.Success);
-            }
-            catch (Exception ex)
-            {
-                ConsoleManager.WriteLineColored($"[ERROR] Failed to stop audio: {ex.Message}",
-                    ConsoleStyle.Colors.Error);
-            }
+    public void SetGain(float gain)
+    {
+        if (!_isInitialized)
+        {
+            return;
         }
 
-        public void SetGain(float gain)
+        try
         {
-            if (!_isInitialized || _audioStream == null)
-            {
-                return;
-            }
+            gain = Math.Clamp(gain, 0.0f, 1.0f);
 
-            try
+            if (_gainProcessor != null)
             {
-                var gainProcessor = _audioStream.PostProcessors.Find(p => p is GainPostProcessor) as GainPostProcessor;
-                if (gainProcessor != null)
-                {
-                    gainProcessor.Gain = Math.Clamp(gain, 0.0f, 1.0f);
-                }
+                _gainProcessor.Gain = gain;
+                ConsoleManager.WriteLineColored($"[INFO] Gain set to {gain:F2}", ConsoleStyle.Colors.Success);
             }
-            catch (Exception ex)
-            {
-                ConsoleManager.WriteLineColored($"[ERROR] Failed to set gain: {ex.Message}", ConsoleStyle.Colors.Error);
-            }
+        }
+        catch (Exception ex)
+        {
+            ConsoleManager.WriteLineColored($"[ERROR] Failed to set gain: {ex.Message}", ConsoleStyle.Colors.Error);
         }
     }
 }
