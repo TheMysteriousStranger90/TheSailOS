@@ -125,7 +125,7 @@ public class CommandProcessor
             { "textedit", new TextEditorCommand(fileManager) },
             { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) },
             { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) },
-            { "find", new FileSearchCommands(fileSearchService) },
+            { "find", new FileSearchCommand(fileSearchService) },
             { "log", new LogCommand() },
             { "session", new SessionCommand() },
         };

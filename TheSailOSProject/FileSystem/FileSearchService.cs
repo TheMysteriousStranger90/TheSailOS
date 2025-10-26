@@ -2,157 +2,229 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace TheSailOSProject.FileSystem
-{
-    public class FileSearchService
-    {
-        private readonly IFileManager _fileManager;
-        private readonly IDirectoryManager _directoryManager;
+namespace TheSailOSProject.FileSystem;
 
-        public FileSearchService(IFileManager fileManager, IDirectoryManager directoryManager)
+public class FileSearchService
+{
+    private readonly IFileManager _fileManager;
+    private readonly IDirectoryManager _directoryManager;
+
+    public FileSearchService(IFileManager fileManager, IDirectoryManager directoryManager)
+    {
+        _fileManager = fileManager ?? throw new ArgumentNullException(nameof(fileManager));
+        _directoryManager = directoryManager ?? throw new ArgumentNullException(nameof(directoryManager));
+    }
+
+    public List<string> FindFiles(string pattern, string directory, bool recursive)
+    {
+        var results = new List<string>();
+
+        try
         {
-            _fileManager = fileManager ?? throw new ArgumentNullException(nameof(fileManager));
-            _directoryManager = directoryManager ?? throw new ArgumentNullException(nameof(directoryManager));
+            directory = NormalizePath(directory);
+
+            if (!Directory.Exists(directory))
+            {
+                Console.WriteLine($"Directory not found: {directory}");
+                return results;
+            }
+
+            SearchInDirectory(pattern, directory, results);
+
+            if (recursive)
+            {
+                SearchSubdirectoriesRecursive(pattern, directory, results);
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Console.WriteLine($"Access denied to directory: {directory}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching in {directory}: {ex.Message}");
         }
 
-        public List<string> FindFiles(string pattern, string directory, bool recursive)
+        return results;
+    }
+
+    private void SearchInDirectory(string pattern, string directory, List<string> results)
+    {
+        try
         {
-            var results = new List<string>();
+            var files = _directoryManager.ListFiles(directory);
 
-            try
+            if (files != null && files.Length > 0)
             {
-                directory = NormalizePath(directory);
-                Console.WriteLine($"[DEBUG] Searching in directory: {directory}");
-                
-                try
+                foreach (var file in files)
                 {
-                    var files = _directoryManager.ListFiles(directory);
-                    Console.WriteLine($"[DEBUG] Found {files?.Length ?? 0} files in directory {directory}");
+                    string filename = Path.GetFileName(file);
 
-                    if (files != null)
+                    if (MatchesPattern(filename, pattern))
                     {
-                        foreach (var file in files)
-                        {
-                            // Get just the filename component for pattern matching
-                            string filename = Path.GetFileName(file);
-                            if (MatchesPattern(filename, pattern))
-                            {
-                                results.Add(file);
-                                Console.WriteLine($"[DEBUG] Found matching file: {file}");
-                            }
-                        }
+                        results.Add(file);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[DEBUG] Error listing files in {directory}: {ex.Message}");
-                }
-                
-                if (recursive)
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error listing files in {directory}: {ex.Message}");
+        }
+    }
+
+    private void SearchSubdirectoriesRecursive(string pattern, string directory, List<string> results)
+    {
+        try
+        {
+            var subdirectories = _directoryManager.ListDirectories(directory);
+
+            if (subdirectories != null && subdirectories.Length > 0)
+            {
+                foreach (var subdir in subdirectories)
                 {
                     try
                     {
-                        var subdirectories = _directoryManager.ListDirectories(directory);
-                        Console.WriteLine($"[DEBUG] Found {subdirectories?.Length ?? 0} subdirectories in {directory}");
+                        string fullSubdirPath = NormalizeSubdirectoryPath(subdir, directory);
 
-                        if (subdirectories != null && subdirectories.Length > 0)
-                        {
-                            foreach (var subdir in subdirectories)
-                            {
-                                Console.WriteLine($"[DEBUG] Raw subdirectory path: '{subdir}'");
+                        SearchInDirectory(pattern, fullSubdirPath, results);
 
-                                string fullSubdirPath;
-
-                                if (subdir.Contains(":"))
-                                {
-                                    fullSubdirPath = subdir;
-                                }
-                                else if (Path.IsPathRooted(subdir))
-                                {
-                                    fullSubdirPath = subdir;
-                                }
-                                else
-                                {
-                                    if (subdir.Contains("\\"))
-                                    {
-                                        fullSubdirPath = Path.Combine(directory, subdir);
-                                    }
-                                    else
-                                    {
-                                        fullSubdirPath = Path.Combine(directory, subdir);
-                                    }
-                                }
-
-                                if (!fullSubdirPath.EndsWith("\\"))
-                                {
-                                    fullSubdirPath += "\\";
-                                }
-
-                                Console.WriteLine($"[DEBUG] Recursing into subdirectory: '{fullSubdirPath}'");
-                                var subdirResults = FindFiles(pattern, fullSubdirPath, true);
-                                results.AddRange(subdirResults);
-                            }
-                        }
+                        SearchSubdirectoriesRecursive(pattern, fullSubdirPath, results);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[DEBUG] Error listing subdirectories in {directory}: {ex.Message}");
-                        Console.WriteLine($"[DEBUG] Exception details: {ex}");
+                        Console.WriteLine($"Error accessing subdirectory: {ex.Message}");
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error searching in {directory}: {ex.Message}");
-                Console.WriteLine($"[DEBUG] Exception details: {ex}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error listing subdirectories in {directory}: {ex.Message}");
+        }
+    }
 
-            return results;
+    private string NormalizeSubdirectoryPath(string subdir, string parentDir)
+    {
+        string fullPath;
+
+        if (subdir.Contains(":"))
+        {
+            fullPath = subdir;
+        }
+        else if (Path.IsPathRooted(subdir))
+        {
+            fullPath = subdir;
+        }
+        else
+        {
+            fullPath = Path.Combine(parentDir, subdir);
         }
 
-        private bool MatchesPattern(string filename, string pattern)
+        if (!fullPath.EndsWith("\\"))
         {
-            if (pattern.StartsWith("*") && pattern.EndsWith(".txt"))
-            {
-                return filename.EndsWith(".txt", StringComparison.OrdinalIgnoreCase);
-            }
+            fullPath += "\\";
+        }
 
-            if (pattern == "*")
-                return true;
+        return fullPath;
+    }
 
-            if (pattern.StartsWith("*") && pattern.EndsWith("*"))
-            {
-                var substring = pattern.Substring(1, pattern.Length - 2);
-                return filename.Contains(substring, StringComparison.OrdinalIgnoreCase);
-            }
+    private bool MatchesPattern(string filename, string pattern)
+    {
+        if (pattern == "*" || pattern == "*.*")
+            return true;
 
-            if (pattern.StartsWith("*"))
-            {
-                var suffix = pattern.Substring(1);
-                return filename.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
-            }
-
-            if (pattern.EndsWith("*"))
-            {
-                var prefix = pattern.Substring(0, pattern.Length - 1);
-                return filename.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
-            }
-
+        if (!pattern.Contains("*"))
             return string.Equals(filename, pattern, StringComparison.OrdinalIgnoreCase);
-        }
 
-        private string NormalizePath(string path)
+        if (pattern.StartsWith("*") && !pattern.Substring(1).Contains("*"))
         {
-            if (string.IsNullOrEmpty(path) || path == ".")
-                return "0:\\";
-
-            if (path.StartsWith("./") || path.StartsWith(".\\"))
-                return "0:\\" + path.Substring(2);
-
-            if (!path.Contains(":"))
-                return "0:\\" + path.TrimStart('\\', '/');
-
-            return path.TrimEnd('\\') + "\\";
+            string extension = pattern.Substring(1);
+            return filename.EndsWith(extension, StringComparison.OrdinalIgnoreCase);
         }
+
+        if (pattern.EndsWith("*") && !pattern.Substring(0, pattern.Length - 1).Contains("*"))
+        {
+            string namePrefix = pattern.Substring(0, pattern.Length - 1);
+            string filenameWithoutExt = Path.GetFileNameWithoutExtension(filename);
+            return string.Equals(filenameWithoutExt, namePrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (pattern.StartsWith("*") && pattern.EndsWith("*") && pattern.Length > 2)
+        {
+            string substring = pattern.Substring(1, pattern.Length - 2);
+            return filename.IndexOf(substring, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        if (pattern.EndsWith("*") && !pattern.StartsWith("*"))
+        {
+            string prefix = pattern.Substring(0, pattern.Length - 1);
+            return filename.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (pattern.StartsWith("*") && !pattern.EndsWith("*"))
+        {
+            string suffix = pattern.Substring(1);
+            return filename.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return MatchesComplexPattern(filename, pattern);
+    }
+
+    private bool MatchesComplexPattern(string filename, string pattern)
+    {
+        string[] parts = pattern.Split('*');
+        int currentPos = 0;
+
+        for (int i = 0; i < parts.Length; i++)
+        {
+            string part = parts[i];
+
+            if (string.IsNullOrEmpty(part))
+                continue;
+
+            int foundPos = filename.IndexOf(part, currentPos, StringComparison.OrdinalIgnoreCase);
+
+            if (foundPos == -1)
+                return false;
+
+            if (i == 0 && !pattern.StartsWith("*") && foundPos != 0)
+                return false;
+
+            if (i == parts.Length - 1 && !pattern.EndsWith("*"))
+            {
+                if (foundPos + part.Length != filename.Length)
+                    return false;
+            }
+
+            currentPos = foundPos + part.Length;
+        }
+
+        return true;
+    }
+
+    private string NormalizePath(string path)
+    {
+        if (string.IsNullOrEmpty(path) || path == ".")
+            return "0:\\";
+
+        if (path.StartsWith("./") || path.StartsWith(".\\"))
+            return "0:\\" + path.Substring(2);
+
+        if (!path.Contains(":"))
+        {
+            path = "0:\\" + path.TrimStart('\\', '/');
+        }
+
+        if (!path.EndsWith("\\"))
+            path += "\\";
+
+        return path;
     }
 }
