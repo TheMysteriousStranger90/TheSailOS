@@ -22,13 +22,14 @@ namespace TheSailOSProject
     {
         private TheSailFileSystem _fileSystem;
         private CommandProcessor _commandProcessor;
+        private MemoryManagementService _memoryService;
+        private SessionCleanupService _sessionCleanupService;
         private User _loggedInUser = null;
         private Session.Session _currentSession = null;
         private ICommandHistoryManager _historyManager;
         private ICurrentDirectoryManager _currentDirectoryManager;
         private IRootDirectoryProvider _rootDirectoryProvider;
         private IAudioManager _audioManager;
-
         public static User CurrentUser { get; set; }
 
         protected override void BeforeRun()
@@ -39,7 +40,7 @@ namespace TheSailOSProject
             InitializeFileSystem();
             ConsoleManager.WriteLineColored("[FileSystem] System initialized", ConsoleStyle.Colors.Success);
 
-            PermissionsManager.Initialize();
+            InitializePermissionsManager();
             ConsoleManager.WriteLineColored("[Permissions] System initialized", ConsoleStyle.Colors.Success);
 
             InitializeProcessManager();
@@ -57,11 +58,17 @@ namespace TheSailOSProject
             InitializeCommandProcessor();
             ConsoleManager.WriteLineColored("[CommandProcessor] System initialized", ConsoleStyle.Colors.Success);
 
-            UserManager.Initialize();
+            InitializeUserManager();
             ConsoleManager.WriteLineColored("[UserManager] System initialized", ConsoleStyle.Colors.Success);
 
-            Log.Initialize();
+            InitializeLog();
             ConsoleManager.WriteLineColored("[Logging] System initialized", ConsoleStyle.Colors.Success);
+            
+            InitializeTimers();
+            ConsoleManager.WriteLineColored("[TimerManager] System initialized", ConsoleStyle.Colors.Success);
+
+            StartSystemServices();
+            ConsoleManager.WriteLineColored("[Services] System services started", ConsoleStyle.Colors.Success);
         }
 
         protected override void Run()
@@ -202,6 +209,27 @@ namespace TheSailOSProject
 
             NetworkManager.Initialize();
         }
+        
+        private void InitializePermissionsManager()
+        {
+            Console.WriteLine("Initializing Permissions Manager...");
+
+            PermissionsManager.Initialize();
+        }
+        
+        private void InitializeUserManager()
+        {
+            Console.WriteLine("Initializing User Manager...");
+
+            UserManager.Initialize();
+        }
+        
+        private void InitializeLog()
+        {
+            Console.WriteLine("Initializing Logging System...");
+
+            Log.Initialize();
+        }
 
         private void InitializeAudio()
         {
@@ -235,11 +263,8 @@ namespace TheSailOSProject
             Console.WriteLine("Initializing Process Manager...");
 
             ProcessManager.Initialize();
-
-            var memoryService = new MemoryManagementService();
-            ProcessManager.Register(memoryService);
-            ProcessManager.Start(memoryService);
-            ProcessManager.Update();
+            
+            //ProcessManager.Update();
         }
 
         private void InitializeTimers()
@@ -248,6 +273,21 @@ namespace TheSailOSProject
             TimerManager.Initialize();
             
             TimerManager.CreateTimer("session_cleanup", 60000000000, SessionCleanupCallback, true);
+        }
+        
+        private void StartSystemServices()
+        {
+            Console.WriteLine("Starting system services...");
+
+            _memoryService = new MemoryManagementService();
+            ProcessManager.Register(_memoryService);
+            ProcessManager.Start(_memoryService);
+
+            _sessionCleanupService = new SessionCleanupService();
+            ProcessManager.Register(_sessionCleanupService);
+            ProcessManager.Start(_sessionCleanupService);
+
+            Console.WriteLine($"[Services] Started {ProcessManager.GetProcesses().Count} system services");
         }
         
         private void InitializeFtpServer()

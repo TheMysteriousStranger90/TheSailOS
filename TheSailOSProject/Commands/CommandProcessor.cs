@@ -36,13 +36,14 @@ public class CommandProcessor
     {
         "ls", "dir", "cd", "mkdir", "rmdir", "renamedir", "copydir", "back", "create", "delete", "read", "write",
         "copy", "move", "rename", "info", "history", "clear", "help", "alias", "reboot", "shutdown", "pwd", "dns",
-        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers", "useradmin", "userinfo",
+        "httpget", "ping", "memory", "freespace", "fstype", "log", "login", "createuser", "deleteuser", "listusers",
+        "useradmin", "userinfo",
         "changepassword", "changeusername",
         "logout",
         "netshutdown", "netconfig", "netstatus", "tcpserver", "tcpclient", "udpserver", "udpclient",
-        "cpu", "processinfo", "date", "time", "format", "partition", "partinfo", "partman",
+        "cpu", "process", "timer", "date", "time", "format", "partition", "partinfo", "partman",
         "playaudio", "stopaudio", "snake", "tetris", "tictactoe", "calculator", "textedit",
-        "permissions", "setpermissions", "find", "grep", "session", 
+        "permissions", "setpermissions", "find", "grep", "session",
     };
 
     public CommandProcessor(
@@ -86,7 +87,6 @@ public class CommandProcessor
             { "pwd", new PrintWorkingDirectoryCommand(currentDirectoryManager) },
             { "reboot", new RebootCommand() },
             { "shutdown", new ShutdownCommand() },
-
             { "dns", new DnsCommand() },
             { "ping", new PingCommand() },
             { "netshutdown", new NetworkShutdownCommand() },
@@ -96,29 +96,22 @@ public class CommandProcessor
             { "tcpclient", new TcpClientCommand() },
             { "udpserver", new UdpServerCommand() },
             { "udpclient", new UdpClientCommand() },
-
             { "memory", new MemoryCommand() },
-            { "cpu", new CPUCommand() },
-            { "processinfo", new ProcessInfoCommand() },
-
+            { "process", new ProcessCommand() },
+            { "timer", new TimerCommand() },
             { "freespace", new FreeSpaceCommand(vfsManager) },
             { "fstype", new FileSystemTypeCommand(vfsManager) },
-
             { "date", new DateCommand() },
             { "time", new TimeCommand() },
-
             { "format", new FormatDriveCommand(diskManager) },
             { "partition", new CreatePartitionCommand(diskManager) },
             { "partinfo", new ListPartitionsCommand(diskManager) },
             { "partman", new PartitionManagerCommand(diskManager) },
-
             { "playaudio", new PlayAudioCommand(audioManager, currentDirectoryManager) },
             { "stopaudio", new StopAudioCommand(audioManager, currentDirectoryManager) },
-
             { "snake", new SnakeGameCommand() },
             { "tetris", new TetrisGameCommand() },
             { "tictactoe", new TicTacToeGameCommand() },
-
             { "login", new LoginCommand(loginHandler) },
             { "logout", new LogoutCommand(logoutHandler) },
             { "createuser", new CreateUserCommand() },
@@ -128,19 +121,12 @@ public class CommandProcessor
             { "userinfo", new UserInfoCommand() },
             { "changepassword", new ChangePasswordCommand() },
             { "changeusername", new ChangeUsernameCommand() },
-
             { "calculator", new CalculatorCommand() },
             { "textedit", new TextEditorCommand(fileManager) },
-
             { "permissions", new ShowFilePermissionsCommand(currentDirectoryManager) },
             { "setpermissions", new SetPermissionsCommand(currentDirectoryManager) },
-
             { "find", new FileSearchCommands(fileSearchService) },
-
             { "log", new LogCommand() },
-            
-            { "timer", new TimerCommand() },
-            
             { "session", new SessionCommand() },
         };
     }
@@ -257,7 +243,7 @@ public class CommandProcessor
             ConsoleManager.WriteLineColored($"Unknown command: {commandName}", ConsoleStyle.Colors.Error);
         }
     }
-    
+
     public void DisplayWithSyntaxHighlighting(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
@@ -266,7 +252,7 @@ public class CommandProcessor
         string[] parts = input.Split(' ');
         if (parts.Length == 0)
             return;
-        
+
         string commandName = parts[0].ToLower();
         if (_commands.ContainsKey(commandName) || _availableCommands.Contains(commandName))
         {
@@ -276,7 +262,7 @@ public class CommandProcessor
         {
             Console.Write(commandName);
         }
-        
+
         for (int i = 1; i < parts.Length; i++)
         {
             Console.Write(" ");
@@ -323,7 +309,7 @@ public class CommandProcessor
                arg.EndsWith(".cfg") ||
                arg.EndsWith(".log");
     }
-    
+
     private Dictionary<string, string> GetHelpTexts()
     {
         return new Dictionary<string, string>
@@ -371,32 +357,43 @@ public class CommandProcessor
             { "log", "Logs a message to the system log.\nUsage: log <message>" },
             { "logout", "Logs out the current user.\nUsage: logout" },
             { "changepassword", "Changes the password of the current user.\nUsage: changepassword" },
-            { "changeusername", "Changes your username.\n" +
-                                "Usage: changeusername <new_username>\n" +
-                                "Note: Your home directory contents will be moved to the new username location." },
+            {
+                "changeusername", "Changes your username.\n" +
+                                  "Usage: changeusername <new_username>\n" +
+                                  "Note: Your home directory contents will be moved to the new username location."
+            },
             { "createuser", "Creates a new user.\nUsage: createuser <username> <password>" },
             { "deleteuser", "Deletes a user.\nUsage: deleteuser <username>" },
             { "listusers", "Lists all users.\nUsage: listusers" },
-            { "useradmin", "Manages administrator privileges for users.\n" +
-                           "Usage:\n" +
-                           "  useradmin grant <username>  - Grant administrator privileges\n" +
-                           "  useradmin revoke <username> - Revoke administrator privileges\n" +
-                           "Note: Only administrators can use this command." },
-            { "userinfo", "Displays information about a user.\n" +
-                          "Usage:\n" +
-                          "  userinfo             - Show information about current user\n" +
-                          "  userinfo <username>  - Show information about a specific user (admin only)" },
-            { "timer", "Manages system timers.\nUsage:\n  timer list - List all timers\n  timer create <name> <ms> <recurring> - Create timer\n  timer destroy <name> - Remove timer" },
+            {
+                "useradmin", "Manages administrator privileges for users.\n" +
+                             "Usage:\n" +
+                             "  useradmin grant <username>  - Grant administrator privileges\n" +
+                             "  useradmin revoke <username> - Revoke administrator privileges\n" +
+                             "Note: Only administrators can use this command."
+            },
+            {
+                "userinfo", "Displays information about a user.\n" +
+                            "Usage:\n" +
+                            "  userinfo             - Show information about current user\n" +
+                            "  userinfo <username>  - Show information about a specific user (admin only)"
+            },
+            {
+                "timer",
+                "Manages system timers.\nUsage:\n  timer list - List all timers\n  timer create <name> <ms> <recurring> - Create timer\n  timer destroy <name> - Remove timer"
+            },
 
             { "SESSION COMMANDS", "The following commands are used to manage user sessions:" },
-            { "session", 
+            {
+                "session",
                 "Manages user sessions.\n" +
                 "Usage:\n" +
                 "  session list          - List all active sessions\n" +
                 "  session stats         - Show session statistics\n" +
                 "  session info [id]     - Show current or specific session info\n" +
                 "  session kill <id>     - Terminate a specific session (admin only)\n" +
-                "  session cleanup       - Clean up inactive sessions (admin only)" },
+                "  session cleanup       - Clean up inactive sessions (admin only)"
+            },
 
             // Network Commands
             { "NETWORK COMMANDS", "The following commands are used to manage the network:" },
@@ -456,7 +453,14 @@ Examples:
 
             // Process Commands
             { "PROCESS COMMANDS", "The following commands are used to manage processes:" },
-            { "processinfo", "Display process information.\nUsage: processinfo [id <ID> | name <Name>]" },
+            {
+                "process", "Manages system processes.\n" +
+                           "Usage:\n" +
+                           "  process list              - List all processes\n" +
+                           "  process info <name|id>    - Show process details\n" +
+                           "  process stop <name|id>    - Stop a process\n" +
+                           "  process start <name|id>   - Start a process"
+            },
 
             // Disk Commands
             { "DISK COMMANDS", "The following commands are used to manage disks and partitions:" },
