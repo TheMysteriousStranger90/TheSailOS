@@ -134,7 +134,7 @@ namespace TheSailOSProject
             }
             else
             {
-                ShowCommandPrompt();
+                //ShowCommandPrompt();
             }
         }
 
