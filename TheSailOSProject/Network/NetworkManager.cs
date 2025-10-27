@@ -11,22 +11,30 @@ public static class NetworkManager
     private static bool _isInitialized = false;
     private static NetworkDevice _activeDevice = null;
     public static bool IsInitialized => _isInitialized;
-    public static NetworkDevice ActiveDevice => _activeDevice;
-
+    
     public static bool Initialize()
     {
         try
         {
             Console.WriteLine("[NetworkManager] Starting network initialization...");
+            Console.WriteLine("[NetworkManager] Step 1: Checking devices...");
 
-            Console.WriteLine("[NetworkManager] Waiting for hardware to be ready...");
-            Global.PIT.Wait(3000);
-
-            _activeDevice = GetNetworkDevice();
-
-            if (_activeDevice == null)
+            int deviceCount = 0;
+            try
             {
-                Console.WriteLine("[ERROR] No network device found!");
+                deviceCount = NetworkDevice.Devices.Count;
+                Console.WriteLine($"[INFO] Device count: {deviceCount}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Cannot check device count: {ex.Message}");
+                Console.WriteLine($"[ERROR] Exception type: {ex.GetType().Name}");
+                return false;
+            }
+
+            if (deviceCount < 1)
+            {
+                Console.WriteLine("[ERROR] No network devices detected!");
                 Console.WriteLine("[INFO] Check your VM network adapter settings:");
                 Console.WriteLine("  - Adapter should be 'Connected' and 'Connect at power on'");
                 Console.WriteLine("  - Use NAT or Bridged mode");
@@ -34,25 +42,64 @@ public static class NetworkManager
                 return false;
             }
 
-            Console.WriteLine($"[OK] Network device found: {_activeDevice.Name}");
-            Console.WriteLine($"[OK] MAC Address: {_activeDevice.MACAddress}");
+            Console.WriteLine("[NetworkManager] Step 2: Waiting for hardware...");
+            Global.PIT.Wait(3000);
 
-            if (ConfigureDHCP())
+            Console.WriteLine("[NetworkManager] Step 3: Getting network device...");
+            _activeDevice = GetNetworkDevice();
+
+            if (_activeDevice == null)
             {
-                _isInitialized = true;
-                Console.WriteLine("[SUCCESS] Network initialized via DHCP");
-                DisplayCurrentConfiguration();
-                return true;
+                Console.WriteLine("[ERROR] Could not access network device!");
+                return false;
+            }
+
+            Console.WriteLine($"[OK] Network device found: {_activeDevice.Name}");
+            
+            Console.WriteLine("[NetworkManager] Step 4: Reading MAC address...");
+            try
+            {
+                Console.WriteLine($"[OK] MAC Address: {_activeDevice.MACAddress}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Cannot read MAC: {ex.Message}");
+            }
+
+            Console.WriteLine("[NetworkManager] Step 5: Starting DHCP...");
+            try
+            {
+                if (ConfigureDHCP())
+                {
+                    _isInitialized = true;
+                    Console.WriteLine("[SUCCESS] Network initialized via DHCP");
+                    DisplayCurrentConfiguration();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] DHCP crashed: {ex.Message}");
+                Console.WriteLine($"[ERROR] Type: {ex.GetType().Name}");
             }
 
             Console.WriteLine("[WARNING] DHCP failed, trying manual configuration...");
 
-            if (ConfigureManually())
+            Console.WriteLine("[NetworkManager] Step 6: Manual configuration...");
+            try
             {
-                _isInitialized = true;
-                Console.WriteLine("[SUCCESS] Network initialized manually");
-                DisplayCurrentConfiguration();
-                return true;
+                if (ConfigureManually())
+                {
+                    _isInitialized = true;
+                    Console.WriteLine("[SUCCESS] Network initialized manually");
+                    DisplayCurrentConfiguration();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Manual config crashed: {ex.Message}");
+                Console.WriteLine($"[ERROR] Type: {ex.GetType().Name}");
             }
 
             Console.WriteLine("[ERROR] Network initialization failed completely");
@@ -61,6 +108,7 @@ public static class NetworkManager
         catch (Exception ex)
         {
             Console.WriteLine($"[FATAL ERROR] Network initialization exception: {ex.Message}");
+            Console.WriteLine($"[FATAL ERROR] Type: {ex.GetType().Name}");
             return false;
         }
     }
@@ -69,6 +117,7 @@ public static class NetworkManager
     {
         try
         {
+            Console.WriteLine("[GetDevice] Trying eth0...");
             try
             {
                 var device = NetworkDevice.GetDeviceByName("eth0");
@@ -77,65 +126,36 @@ public static class NetworkManager
                     Console.WriteLine("[INFO] Found device by name: eth0");
                     return device;
                 }
+                Console.WriteLine("[GetDevice] eth0 not found");
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[GetDevice] eth0 failed: {ex.Message}");
             }
 
-            string[] possibleNames = { "nic0", "en0", "rtl8139", "pcnet32", "e1000", "vmxnet3" };
-
-            foreach (var name in possibleNames)
-            {
-                try
-                {
-                    var device = NetworkDevice.GetDeviceByName(name);
-                    if (device != null)
-                    {
-                        Console.WriteLine($"[INFO] Found device by name: {name}");
-                        return device;
-                    }
-                }
-                catch
-                {
-                }
-            }
-
+            Console.WriteLine("[GetDevice] Trying first device from list...");
             try
             {
-                if (NetworkDevice.Devices != null)
+                if (NetworkDevice.Devices != null && NetworkDevice.Devices.Count > 0)
                 {
-                    int count = 0;
-                    try
+                    Console.WriteLine($"[GetDevice] Accessing device at index 0...");
+                    var device = NetworkDevice.Devices[0];
+                    if (device != null)
                     {
-                        count = NetworkDevice.Devices.Count;
+                        Console.WriteLine("[INFO] Using first available device");
+                        return device;
                     }
-                    catch
-                    {
-                        return null;
-                    }
-
-                    if (count > 0)
-                    {
-                        for (int i = 0; i < count; i++)
-                        {
-                            try
-                            {
-                                var device = NetworkDevice.Devices[i];
-                                if (device != null)
-                                {
-                                    Console.WriteLine($"[INFO] Found device at index {i}");
-                                    return device;
-                                }
-                            }
-                            catch
-                            {
-                            }
-                        }
-                    }
+                    Console.WriteLine("[GetDevice] Device at index 0 is null");
+                }
+                else
+                {
+                    Console.WriteLine("[GetDevice] Devices list is null or empty");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[GetDevice] List access failed: {ex.Message}");
+                Console.WriteLine($"[GetDevice] Exception type: {ex.GetType().Name}");
             }
 
             return null;
@@ -149,26 +169,79 @@ public static class NetworkManager
 
     private static bool ConfigureDHCP()
     {
+        DHCPClient dhcpClient = null;
+        
         try
         {
-            Console.WriteLine("[DHCP] Sending DHCP discover packet...");
-
-            using (var dhcpClient = new DHCPClient())
+            Console.WriteLine("[DHCP] Step 1: Creating DHCP client...");
+            try
+            {
+                dhcpClient = new DHCPClient();
+                Console.WriteLine("[DHCP] Client created successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DHCP ERROR] Cannot create client: {ex.Message}");
+                Console.WriteLine($"[DHCP ERROR] Type: {ex.GetType().Name}");
+                return false;
+            }
+            
+            Console.WriteLine("[DHCP] Step 2: Sending discover packet...");
+            try
             {
                 dhcpClient.SendDiscoverPacket();
+                Console.WriteLine("[DHCP] Discover packet sent");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DHCP ERROR] Cannot send discover: {ex.Message}");
+                Console.WriteLine($"[DHCP ERROR] Type: {ex.GetType().Name}");
+                return false;
+            }
+            
+            Console.WriteLine("[DHCP] Step 3: Checking immediate response...");
+            try
+            {
+                var currentAddress = NetworkConfiguration.CurrentAddress;
+
+                if (currentAddress != null &&
+                    !currentAddress.ToString().Equals("0.0.0.0") &&
+                    !currentAddress.ToString().Equals("255.255.255.255"))
+                {
+                    Console.WriteLine("[DHCP] Address assigned immediately");
+                    Console.WriteLine("[DHCP] Step 4: Closing client...");
+                    dhcpClient.Close();
+                    Console.WriteLine("[DHCP] Client closed");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DHCP ERROR] Check failed: {ex.Message}");
             }
 
-            Console.WriteLine("[DHCP] Waiting for DHCP response...");
+            Console.WriteLine("[DHCP] Step 5: Waiting for response...");
             Global.PIT.Wait(5000);
 
-            var currentAddress = NetworkConfiguration.CurrentAddress;
-
-            if (currentAddress != null &&
-                !currentAddress.ToString().Equals("0.0.0.0") &&
-                !currentAddress.ToString().Equals("255.255.255.255"))
+            Console.WriteLine("[DHCP] Step 6: Checking delayed response...");
+            try
             {
-                Console.WriteLine("[DHCP] Address assigned successfully");
-                return true;
+                var currentAddress = NetworkConfiguration.CurrentAddress;
+
+                if (currentAddress != null &&
+                    !currentAddress.ToString().Equals("0.0.0.0") &&
+                    !currentAddress.ToString().Equals("255.255.255.255"))
+                {
+                    Console.WriteLine("[DHCP] Address assigned successfully");
+                    Console.WriteLine("[DHCP] Step 7: Closing client...");
+                    dhcpClient.Close();
+                    Console.WriteLine("[DHCP] Client closed");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DHCP ERROR] Check failed: {ex.Message}");
             }
 
             Console.WriteLine("[DHCP] No address assigned");
@@ -176,8 +249,25 @@ public static class NetworkManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[DHCP ERROR] {ex.Message}");
+            Console.WriteLine($"[DHCP FATAL ERROR] {ex.Message}");
+            Console.WriteLine($"[DHCP FATAL ERROR] Type: {ex.GetType().Name}");
             return false;
+        }
+        finally
+        {
+            Console.WriteLine("[DHCP] Cleanup: Closing client...");
+            try
+            {
+                if (dhcpClient != null)
+                {
+                    dhcpClient.Close();
+                    Console.WriteLine("[DHCP] Cleanup complete");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DHCP] Cleanup error: {ex.Message}");
+            }
         }
     }
 
@@ -215,6 +305,7 @@ public static class NetworkManager
             if (currentAddress != null &&
                 !currentAddress.ToString().Equals("0.0.0.0"))
             {
+                Console.WriteLine("[MANUAL] Configuration applied successfully");
                 return true;
             }
 
@@ -260,6 +351,14 @@ public static class NetworkManager
             if (!_isInitialized)
             {
                 Console.WriteLine("Status: Not Initialized");
+                try
+                {
+                    Console.WriteLine($"Available devices: {NetworkDevice.Devices.Count}");
+                }
+                catch
+                {
+                    Console.WriteLine("Available devices: Unknown");
+                }
                 return;
             }
 
