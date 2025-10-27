@@ -1,6 +1,5 @@
 # TheSailOS
-![Image 1](Images/Screen1.png)
-![Image 2](Images/Screen2.png)
+![Image 1](Images/Screen.png)
 
 ## Overview
 
@@ -51,9 +50,9 @@ For details, see the documentation [here](https://themysteriousstranger90.github
 - **Audio:**
     - Audio playback support
 
-## Important Note: Version 0.0.3 - Alpha Stage
+## Important Note: Version 0.0.4 - Alpha Stage
 
-This is an early alpha release (version 0.0.3) of TheSailOS. As such, it is not feature-complete and may contain bugs, unstable components, and unimplemented features. Use with caution and be aware that data loss or system instability may occur.
+This is an early alpha release (version 0.0.4) of TheSailOS. As such, it is not feature-complete and may contain bugs, unstable components, and unimplemented features. Use with caution and be aware that data loss or system instability may occur.
 
 ## Default Credentials
 
@@ -73,3 +72,10 @@ Bohdan Harabadzhyu
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## YouTube Review
+<details>
+<summary>📺 Watch Video Review</summary>
+
+[![YouTube](https://img.youtube.com/vi/YeAykl1JTRM/maxresdefault.jpg)](https://youtu.be/YeAykl1JTRM)
+</details>
