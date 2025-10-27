@@ -351,6 +351,66 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#version-004" class="md-nav__link">
+    <span class="md-ellipsis">
+      Version 0.0.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version 0.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enhanced-process-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enhanced Process Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-experience-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Experience Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Technical Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#version-003" class="md-nav__link">
     <span class="md-ellipsis">
       Version 0.0.3
@@ -421,6 +481,66 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#version-004" class="md-nav__link">
+    <span class="md-ellipsis">
+      Version 0.0.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version 0.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enhanced-process-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enhanced Process Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-experience-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Experience Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Technical Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#version-003" class="md-nav__link">
     <span class="md-ellipsis">
       Version 0.0.3
@@ -476,6 +596,51 @@
 
 
 <h1 id="version">Version</h1>
+<h2 id="version-004">Version 0.0.4</h2>
+<p><strong>Release Date:</strong> October 27, 2025</p>
+<p>This release introduces major improvements to process management, system monitoring, and file search capabilities:</p>
+<h3 id="enhanced-process-management">Enhanced Process Management</h3>
+<ul>
+<li><strong>Unified Process Command:</strong> New comprehensive <code>process</code> command with multiple subcommands:<ul>
+<li><code>process list</code> - Display all running processes with detailed information (ID, Name, Status, Type)</li>
+<li><code>process info &lt;name|id&gt;</code> - Show detailed information about a specific process</li>
+<li><code>process start &lt;name|id&gt;</code> - Start a stopped process</li>
+<li><code>process stop &lt;name|id&gt;</code> - Stop a running process</li>
+</ul>
+</li>
+<li><strong>Improved Process Display:</strong><ul>
+<li>Color-coded status indicators (Green for Running, Yellow for Stopped)</li>
+</ul>
+</li>
+<li><strong>Process Identification:</strong> Support for finding processes by both name and ID</li>
+<li><strong>Uptime Tracking:</strong> Shows process creation time and uptime in minutes</li>
+</ul>
+<h3 id="user-experience-improvements">User Experience Improvements</h3>
+<ul>
+<li><strong>Better Error Handling:</strong> More descriptive error messages for process and timer operations</li>
+<li><strong>Consistent Color Scheme:</strong> Unified color-coding across all new commands</li>
+<li><strong>Improved Help Documentation:</strong> Updated help text with detailed examples for all new commands</li>
+<li><strong>Command Validation:</strong> Better argument validation with clear usage instructions</li>
+</ul>
+<h3 id="technical-improvements">Technical Improvements</h3>
+<ul>
+<li><strong>Code Refactoring:</strong> Removed duplicate ProcessInfoCommand in favor of unified ProcessCommand</li>
+<li><strong>Performance Optimization:</strong> Faster file search with improved directory traversal</li>
+<li><strong>Access Control:</strong> Proper handling of unauthorized directory access during recursive search</li>
+<li><strong>Path Normalization:</strong> Better handling of absolute and relative paths in file operations</li>
+</ul>
+<h3 id="bug-fixes">Bug Fixes</h3>
+<ul>
+<li>Fixed issues with process lookup by ID and name</li>
+<li>Improved timer state management</li>
+<li>Better handling of edge cases in file pattern matching</li>
+<li>Resolved path handling issues in recursive directory search</li>
+</ul>
+<h3 id="breaking-changes">Breaking Changes</h3>
+<ul>
+<li><code>processinfo</code> command has been replaced with <code>process info</code> subcommand</li>
+<li>File search now requires explicit <code>-r</code> flag for recursive search (non-recursive by default)</li>
+</ul>
 <h2 id="version-003">Version 0.0.3</h2>
 <p><strong>Release Date:</strong> February 28, 2025</p>
 <p>This release adds several core system features:</p>
