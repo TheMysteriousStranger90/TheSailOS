@@ -29,30 +29,33 @@ public class ProcessCommand : ICommand
             case "info":
                 if (args.Length < 2)
                 {
-                    ConsoleManager.WriteLineColored("Usage: process info <name|id>", 
+                    ConsoleManager.WriteLineColored("Usage: process info <name|id>",
                         ConsoleStyle.Colors.Error);
                     return;
                 }
+
                 ShowProcessInfo(args[1]);
                 break;
 
             case "stop":
                 if (args.Length < 2)
                 {
-                    ConsoleManager.WriteLineColored("Usage: process stop <name|id>", 
+                    ConsoleManager.WriteLineColored("Usage: process stop <name|id>",
                         ConsoleStyle.Colors.Error);
                     return;
                 }
+
                 StopProcess(args[1]);
                 break;
 
             case "start":
                 if (args.Length < 2)
                 {
-                    ConsoleManager.WriteLineColored("Usage: process start <name|id>", 
+                    ConsoleManager.WriteLineColored("Usage: process start <name|id>",
                         ConsoleStyle.Colors.Error);
                     return;
                 }
+
                 StartProcess(args[1]);
                 break;
 
@@ -82,10 +85,10 @@ public class ProcessCommand : ICommand
             return;
         }
 
-        ConsoleManager.WriteLineColored($"\nSystem Processes ({processes.Count}):", 
+        ConsoleManager.WriteLineColored($"\nSystem Processes ({processes.Count}):",
             ConsoleStyle.Colors.Primary);
         Console.WriteLine(new string('=', 80));
-        Console.WriteLine(string.Format("  {0,-5} {1,-30} {2,-12} {3}", 
+        Console.WriteLine(string.Format("  {0,-5} {1,-30} {2,-12} {3}",
             "ID", "Name", "Status", "Type"));
         Console.WriteLine(new string('-', 80));
 
@@ -103,7 +106,7 @@ public class ProcessCommand : ICommand
             Console.Write(string.Format("{0,-12} ", status));
             Console.ForegroundColor = oldColor;
 
-            Console.WriteLine(process.Type);
+            Console.WriteLine(ProcessTypeToString(process.Type));
         }
 
         Console.WriteLine(new string('=', 80));
@@ -114,12 +117,12 @@ public class ProcessCommand : ICommand
         Process process = FindProcess(identifier);
         if (process == null)
         {
-            ConsoleManager.WriteLineColored($"Process '{identifier}' not found", 
+            ConsoleManager.WriteLineColored($"Process '{identifier}' not found",
                 ConsoleStyle.Colors.Error);
             return;
         }
 
-        ConsoleManager.WriteLineColored($"\nProcess Information: {process.Name}", 
+        ConsoleManager.WriteLineColored($"\nProcess Information: {process.Name}",
             ConsoleStyle.Colors.Primary);
         Console.WriteLine(new string('=', 50));
 
@@ -130,7 +133,7 @@ public class ProcessCommand : ICommand
         Console.WriteLine(process.Name);
 
         ConsoleManager.WriteColored("  Type:         ", ConsoleStyle.Colors.Primary);
-        Console.WriteLine(process.Type);
+        Console.WriteLine(ProcessTypeToString(process.Type));
 
         ConsoleManager.WriteColored("  Status:       ", ConsoleStyle.Colors.Primary);
         if (process.IsRunning)
@@ -157,14 +160,14 @@ public class ProcessCommand : ICommand
         Process process = FindProcess(identifier);
         if (process == null)
         {
-            ConsoleManager.WriteLineColored($"Process '{identifier}' not found", 
+            ConsoleManager.WriteLineColored($"Process '{identifier}' not found",
                 ConsoleStyle.Colors.Error);
             return;
         }
 
         if (ProcessManager.Stop(process))
         {
-            ConsoleManager.WriteLineColored($"Process '{process.Name}' stopped", 
+            ConsoleManager.WriteLineColored($"Process '{process.Name}' stopped",
                 ConsoleStyle.Colors.Success);
         }
     }
@@ -174,14 +177,14 @@ public class ProcessCommand : ICommand
         Process process = FindProcess(identifier);
         if (process == null)
         {
-            ConsoleManager.WriteLineColored($"Process '{identifier}' not found", 
+            ConsoleManager.WriteLineColored($"Process '{identifier}' not found",
                 ConsoleStyle.Colors.Error);
             return;
         }
 
         if (ProcessManager.Start(process))
         {
-            ConsoleManager.WriteLineColored($"Process '{process.Name}' started", 
+            ConsoleManager.WriteLineColored($"Process '{process.Name}' started",
                 ConsoleStyle.Colors.Success);
         }
     }
@@ -194,5 +197,20 @@ public class ProcessCommand : ICommand
         }
 
         return ProcessManager.GetProcessByName(identifier);
+    }
+
+    private string ProcessTypeToString(ProcessType type)
+    {
+        switch (type)
+        {
+            case ProcessType.Kernel:
+                return "Kernel";
+            case ProcessType.Service:
+                return "Service";
+            case ProcessType.Application:
+                return "Application";
+            default:
+                return "Unknown";
+        }
     }
 }

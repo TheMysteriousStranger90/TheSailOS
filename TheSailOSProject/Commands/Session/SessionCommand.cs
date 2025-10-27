@@ -6,6 +6,9 @@ namespace TheSailOSProject.Commands.Session;
 
 public class SessionCommand : ICommand
 {
+    public string Name => "session";
+    public string Description => "Manage user sessions";
+
     public void Execute(string[] args)
     {
         if (args.Length == 0)
@@ -80,7 +83,7 @@ public class SessionCommand : ICommand
                 ? session.User.Username.Substring(0, 10)
                 : session.User.Username.PadRight(10);
 
-            string status = session.Status.ToString().PadRight(10);
+            string status = SessionStatusToString(session.Status).PadRight(10);
             string duration = session.GetFormattedDuration().PadRight(8);
             string commands = session.CommandsExecuted.ToString();
 
@@ -124,5 +127,22 @@ public class SessionCommand : ICommand
     {
         SessionManager.CleanupInactiveSessions(System.TimeSpan.FromMinutes(1));
         ConsoleManager.WriteLineColored("Inactive sessions cleaned up", ConsoleStyle.Colors.Success);
+    }
+
+    private string SessionStatusToString(SessionStatus status)
+    {
+        switch (status)
+        {
+            case SessionStatus.Active:
+                return "Active";
+            case SessionStatus.Idle:
+                return "Idle";
+            case SessionStatus.Suspended:
+                return "Suspended";
+            case SessionStatus.Terminated:
+                return "Terminated";
+            default:
+                return "Unknown";
+        }
     }
 }
